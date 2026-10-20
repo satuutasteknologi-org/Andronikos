@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>Andronikos — Tower of the Winds · Nusantara</title>
+  <meta name="description" content="Informasi risiko dampak cuaca per unit wilayah Indonesia — Enterprise Weather Intelligence Platform" />
+
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+
+  <!-- MapLibre GL JS CSS -->
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Trunk WASM -->
+  <link data-trunk rel="rust" data-bin="andronikos-ui" />
+
+  <style>
+    :root {
+      --c-bg:       #050c1a;
+      --c-surface:  rgba(8,18,38,0.84);
+      --c-border:   rgba(56,139,253,0.18);
+      --c-accent:   #3b82f6;
+      --c-accent2:  #06b6d4;
+      --c-accent3:  #8b5cf6;
+      --c-warn:     #f59e0b;
+      --c-danger:   #ef4444;
+      --c-ok:       #10b981;
+      --c-tx:       #e2e8f0;
+      --c-tx2:      #94a3b8;
+      --c-tx3:      #475569;
+      --font:       'Inter', system-ui, sans-serif;
+      --mono:       'JetBrains Mono', monospace;
+      --blur:       blur(24px) saturate(180%);
+      --blur-sm:    blur(12px) saturate(160%);
+      --shadow:     0 0 40px rgba(59,130,246,0.12), 0 8px 40px rgba(0,0,0,0.6);
+      --shadow-sm:  0 4px 16px rgba(0,0,0,0.5);
+      --ease:       all 0.22s cubic-bezier(0.4,0,0.2,1);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100vw; height: 100vh; overflow: hidden; font-family: var(--font); background: var(--c-bg); color: var(--c-tx); -webkit-font-smoothing: antialiased; }
+
+    /* MAP */
+    #map { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 1; }
+    .maplibregl-ctrl-attrib, .maplibregl-ctrl-logo { display: none !important; }
+    .maplibregl-ctrl-bottom-right { bottom: 42px !important; right: 8px !important; }
+    .maplibregl-ctrl-bottom-left  { display: none !important; }
+    .maplibregl-ctrl button { background: var(--c-surface) !important; border: 1px solid var(--c-border) !important; backdrop-filter: var(--blur-sm) !important; }
+    .maplibregl-ctrl-group { border: none !important; box-shadow: var(--shadow-sm) !important; border-radius: 8px !important; overflow: hidden; }
+
+    /* NAVBAR */
+    #navbar {
+      position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 200;
+      background: linear-gradient(180deg, rgba(5,12,26,0.95) 0%, rgba(5,12,26,0) 100%);
+      display: flex; align-items: center; padding: 0 12px; gap: 10px; pointer-events: none;
+    }
+    #navbar > * { pointer-events: auto; }
+    .nav-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .nav-logo {
+      width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
+      overflow: hidden;
+      box-shadow: 0 0 18px rgba(59,130,246,0.5);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-logo img {
+      width: 100%; height: 100%; object-fit: cover; border-radius: 9px;
+      display: block;
+    }
+    .nav-title { font-size: 13px; font-weight: 700; color: var(--c-tx); letter-spacing: 0.02em; line-height: 1; }
+    .nav-sub   { font-size: 8px; color: var(--c-tx2); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 2px; }
+    .nav-divider { width: 1px; height: 22px; background: var(--c-border); flex-shrink: 0; }
+    .nav-modes {
+      display: flex; gap: 3px; background: var(--c-surface);
+      border: 1px solid var(--c-border); border-radius: 24px; padding: 3px;
+      backdrop-filter: var(--blur-sm);
+    }
+    .nav-mode-btn {
+      padding: 4px 11px; border-radius: 20px; border: none; background: transparent;
+      color: var(--c-tx2); font-family: var(--font); font-size: 11px; font-weight: 500;
+      cursor: pointer; transition: var(--ease); white-space: nowrap;
+    }
+    .nav-mode-btn:hover { color: var(--c-tx); background: rgba(255,255,255,0.06); }
+    .nav-mode-btn.active { background: linear-gradient(135deg, var(--c-accent), var(--c-accent2)); color: #fff; box-shadow: 0 0 12px rgba(59,130,246,0.4); }
+    .nav-spacer { flex: 1; }
+    .nav-live {
+      display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--c-tx2);
+      background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 20px;
+      padding: 4px 10px; backdrop-filter: var(--blur-sm);
+    }
+    .nav-live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--c-ok); animation: dot-pulse 2s infinite; }
+    @keyframes dot-pulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(16,185,129,.6)} 50%{opacity:.8;box-shadow:0 0 0 5px rgba(16,185,129,0)} }
+    .nav-clock {
+      font-family: var(--mono); font-size: 11px; color: var(--c-tx);
+      background: var(--c-surface); border: 1px solid var(--c-border);
+      border-radius: 7px; padding: 4px 10px; backdrop-filter: var(--blur-sm); letter-spacing: 0.04em;
+    }
+
+    /* SIDEBAR TOGGLE */
+    #sidebar-toggle {
+      position: fixed; top: 62px; left: 8px; z-index: 160;
+      width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--c-border);
+      background: var(--c-surface); backdrop-filter: var(--blur-sm); color: var(--c-tx);
+      font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: var(--ease); box-shadow: var(--shadow-sm);
+    }
+    #sidebar-toggle:hover { background: rgba(59,130,246,0.18); border-color: var(--c-accent); }
+    #sidebar.open + #sidebar-toggle { left: 228px; }
+
+    /* SIDEBAR */
+    #sidebar {
+      position: fixed; top: 62px; left: 0; bottom: 42px; width: 220px; z-index: 150;
+      display: flex; flex-direction: column; gap: 8px; padding: 8px;
+      pointer-events: none; transform: translateX(-100%);
+      transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+    }
+    #sidebar.open { transform: translateX(0); pointer-events: auto; }
+    .sb-section {
+      background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 12px;
+      backdrop-filter: var(--blur); box-shadow: var(--shadow); overflow: hidden;
+    }
+    .sb-head {
+      padding: 8px 12px; font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--c-accent2); border-bottom: 1px solid var(--c-border);
+    }
+    .lb {
+      display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 12px;
+      border: none; background: transparent; color: var(--c-tx2); font-family: var(--font);
+      font-size: 11px; cursor: pointer; transition: var(--ease);
+      border-bottom: 1px solid rgba(255,255,255,0.04); text-align: left;
+    }
+    .lb:last-child { border-bottom: none; }
+    .lb:hover { background: rgba(255,255,255,0.05); color: var(--c-tx); }
+    .lb.active { color: var(--c-accent); background: rgba(59,130,246,0.08); }
+    .lb-icon { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; background: rgba(255,255,255,0.05); transition: var(--ease); }
+    .lb.active .lb-icon { background: rgba(59,130,246,0.2); }
+    .lb-toggle { margin-left: auto; width: 28px; height: 16px; border-radius: 8px; background: var(--c-tx3); position: relative; transition: var(--ease); flex-shrink: 0; }
+    .lb.active .lb-toggle { background: var(--c-accent); }
+    .lb-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; transition: var(--ease); }
+    .lb.active .lb-toggle::after { left: 14px; }
+
+    /* RIGHT PANEL */
+    #right-panel { position: fixed; top: 62px; right: 8px; z-index: 150; display: flex; flex-direction: column; gap: 8px; }
+    .icon-btn {
+      width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--c-border);
+      background: var(--c-surface); backdrop-filter: var(--blur-sm); color: var(--c-tx2);
+      font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: var(--ease); box-shadow: var(--shadow-sm);
+    }
+    .icon-btn:hover { color: var(--c-tx); background: rgba(59,130,246,0.18); border-color: var(--c-accent); }
+    .icon-btn.active { color: var(--c-accent); border-color: var(--c-accent); background: rgba(59,130,246,0.14); }
+
+    /* BASEMAP SWITCHER */
+    #basemap-switcher {
+      position: fixed; bottom: 54px; right: 50px; z-index: 150;
+      display: flex; gap: 4px; background: var(--c-surface); border: 1px solid var(--c-border);
+      border-radius: 24px; padding: 4px; backdrop-filter: var(--blur); box-shadow: var(--shadow-sm);
+    }
+    .bm-btn {
+      padding: 4px 11px; border-radius: 20px; border: none; background: transparent;
+      color: var(--c-tx2); font-family: var(--font); font-size: 10px; font-weight: 500;
+      cursor: pointer; transition: var(--ease);
+    }
+    .bm-btn:hover { color: var(--c-tx); background: rgba(255,255,255,0.06); }
+    .bm-btn.active { background: linear-gradient(135deg, var(--c-accent), var(--c-accent3)); color: #fff; box-shadow: 0 0 10px rgba(59,130,246,0.35); }
+
+    /* WEATHER HUD */
+    #weather-hud {
+      position: fixed; bottom: 50px; left: 8px; z-index: 150; width: 200px;
+      background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 14px;
+      backdrop-filter: var(--blur); box-shadow: var(--shadow);
+    }
+    .hud-head { padding: 8px 12px 6px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--c-border); }
+    .hud-loc { font-size: 12px; font-weight: 600; color: var(--c-tx); }
+    .hud-badge { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 2px 7px; border-radius: 10px; }
+    .hud-badge.high   { background: rgba(245,158,11,0.2); color: var(--c-warn); }
+    .hud-badge.medium { background: rgba(239,68,68,0.2);  color: var(--c-danger); }
+    .hud-badge.low    { background: rgba(16,185,129,0.2); color: var(--c-ok); }
+    .hud-metrics { padding: 10px 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .hud-m { display: flex; flex-direction: column; gap: 2px; }
+    .hud-val { font-family: var(--mono); font-size: 20px; font-weight: 500; color: var(--c-tx); line-height: 1; }
+    .hud-unit { font-size: 9px; color: var(--c-accent2); font-weight: 600; }
+    .hud-lbl  { font-size: 9px; color: var(--c-tx2); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 1px; }
+    .hud-bars { padding: 0 12px 10px; }
+    .hud-bar-row { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+    .hud-bar-lbl { font-size: 9px; color: var(--c-tx2); width: 50px; flex-shrink: 0; }
+    .hud-track { flex: 1; height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+    .hud-fill  { height: 100%; border-radius: 2px; transition: width 0.7s cubic-bezier(0.4,0,0.2,1); }
+    .hud-barval { font-family: var(--mono); font-size: 9px; color: var(--c-tx2); width: 28px; text-align: right; }
+
+    /* POPUP */
+    .maplibregl-popup-content {
+      background: var(--c-surface) !important; border: 1px solid var(--c-border) !important;
+      border-radius: 12px !important; color: var(--c-tx) !important; font-family: var(--font) !important;
+      font-size: 12px !important; line-height: 1.5 !important; padding: 12px 14px !important;
+      box-shadow: var(--shadow) !important; backdrop-filter: var(--blur) !important; min-width: 160px;
+    }
+    .maplibregl-popup-close-button { color: var(--c-tx2) !important; font-size: 16px !important; right: 6px !important; top: 4px !important; }
+    .maplibregl-popup-tip { display: none !important; }
+    .pt { font-size: 13px; font-weight: 700; color: var(--c-tx); margin-bottom: 7px; }
+    .pr { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 3px; }
+    .pk { color: var(--c-tx2); font-size: 11px; }
+    .pv { color: var(--c-tx); font-size: 11px; font-weight: 500; font-family: var(--mono); }
+    .prisk { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+    .prisk.high   { background: rgba(245,158,11,0.18); color: var(--c-warn); }
+    .prisk.medium { background: rgba(239,68,68,0.18);  color: var(--c-danger); }
+    .prisk.low    { background: rgba(16,185,129,0.18); color: var(--c-ok); }
+
+    /* LEGEND */
+    #legend {
+      position: fixed; bottom: 50px; right: 8px; z-index: 150;
+      background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 12px;
+      backdrop-filter: var(--blur); box-shadow: var(--shadow-sm);
+      padding: 10px 12px; min-width: 148px; display: none;
+    }
+    #legend.visible { display: block; }
+    .leg-title { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--c-accent2); margin-bottom: 8px; }
+    .leg-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+    .leg-row:last-child { margin-bottom: 0; }
+    .leg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .leg-txt { font-size: 11px; color: var(--c-tx2); }
+
+    /* CITY MARKERS */
+    .city-marker { transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1); cursor: pointer; }
+    .city-marker:hover { transform: scale(1.5) !important; }
+    .cm-inner { border-radius: 50%; border: 2.5px solid rgba(255,255,255,0.9); animation: cm-pulse 3s ease-in-out infinite; }
+    @keyframes cm-pulse { 0%{box-shadow:0 0 0 0 rgba(255,255,255,0.4)} 70%{box-shadow:0 0 0 8px rgba(255,255,255,0)} 100%{box-shadow:0 0 0 0 rgba(255,255,255,0)} }
+
+    /* STATUS BAR */
+    #status-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 38px; z-index: 200;
+      background: linear-gradient(0deg, rgba(5,12,26,0.95) 0%, rgba(5,12,26,0) 100%);
+      display: flex; align-items: center; padding: 0 12px; gap: 14px; pointer-events: none;
+    }
+    .si { display: flex; align-items: center; gap: 4px; }
+    .si-lbl { font-size: 8px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--c-tx3); font-family: var(--mono); }
+    .si-val { font-family: var(--mono); font-size: 10px; color: var(--c-tx2); }
+    .si-sp { flex: 1; }
+    .si-brand { font-size: 10px; color: var(--c-tx3); letter-spacing: 0.03em; }
+
+    /* LOADING */
+    #loading-overlay {
+      position: fixed; inset: 0; z-index: 9999; background: var(--c-bg);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+    #loading-overlay.hidden { opacity: 0; visibility: hidden; }
+    .ll { width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, var(--c-accent), var(--c-accent3)); display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 0 40px rgba(59,130,246,0.5); animation: lb-breathe 2s ease-in-out infinite; }
+    @keyframes lb-breathe { 0%,100%{box-shadow:0 0 40px rgba(59,130,246,.5);transform:scale(1)} 50%{box-shadow:0 0 60px rgba(59,130,246,.8);transform:scale(1.05)} }
+    .lt { font-size: 20px; font-weight: 700; color: var(--c-tx); }
+    .ls { font-size: 12px; color: var(--c-tx2); letter-spacing: 0.05em; }
+    .lb-track { width: 200px; height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
+    .lb-fill  { height: 100%; background: linear-gradient(90deg, var(--c-accent), var(--c-accent2)); border-radius: 2px; animation: lb-prog 2.5s ease-in-out forwards; }
+    @keyframes lb-prog { 0%{width:0%} 60%{width:80%} 100%{width:100%} }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--c-border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+  <!-- Loading Screen -->
+  <div id="loading-overlay">
+    <div class="ll">🌪</div>
+    <div style="text-align:center">
+      <div class="lt">Andronikos</div>
+      <div class="ls">Tower of the Winds · Nusantara</div>
+    </div>
+    <div class="lb-track"><div class="lb-fill"></div></div>
+  </div>
+
+  <!-- MAP FULL FRAME -->
+  <div id="map"></div>
+
+  <!-- Leptos WASM Mount -->
+  <div id="leptos-root" style="display:none"></div>
+
+  <!-- TOP NAVBAR -->
+  <nav id="navbar">
+    <a class="nav-brand" href="#">
+      <div class="nav-logo"><img src="logoand.jpg" alt="Andronikos Logo" onerror="this.style.display='none';this.parentElement.textContent='🌪'"></div>
+      <div>
+        <div class="nav-title">Andronikos</div>
+        <div class="nav-sub">Tower of the Winds</div>
+      </div>
+    </a>
+    <div class="nav-divider"></div>
+    <div class="nav-modes">
+      <button class="nav-mode-btn active" onclick="setMode(this,'wind')">💨 Angin</button>
+      <button class="nav-mode-btn" onclick="setMode(this,'rain')">🌧 Hujan</button>
+      <button class="nav-mode-btn" onclick="setMode(this,'temp')">🌡 Suhu</button>
+      <button class="nav-mode-btn" onclick="setMode(this,'hazard')">⚠️ Hazard</button>
+    </div>
+    <div class="nav-spacer"></div>
+    <div class="nav-live"><div class="nav-live-dot"></div>Live · Open-Meteo</div>
+    <div class="nav-clock" id="nav-clock">--:--:-- UTC</div>
+  </nav>
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="sb-section">
+      <div class="sb-head">🗂 Layers</div>
+      <button class="lb active" id="btn-markers" onclick="toggleLayer('markers')">
+        <div class="lb-icon">📍</div><span>Kota / Stasiun</span><div class="lb-toggle"></div>
+      </button>
+      <button class="lb" id="btn-heatmap" onclick="toggleLayer('heatmap')">
+        <div class="lb-icon">🔥</div><span>Heatmap Risiko</span><div class="lb-toggle"></div>
+      </button>
+      <button class="lb" id="btn-fills" onclick="toggleLayer('fills')">
+        <div class="lb-icon">🗺</div><span>Wilayah</span><div class="lb-toggle"></div>
+      </button>
+      <button class="lb" id="btn-circles" onclick="toggleLayer('circles')">
+        <div class="lb-icon">🔵</div><span>Lingkaran Stasiun</span><div class="lb-toggle"></div>
+      </button>
+      <button class="lb" id="btn-lines" onclick="toggleLayer('lines')">
+        <div class="lb-icon">〰</div><span>Jalur Pemantauan</span><div class="lb-toggle"></div>
+      </button>
+      <button class="lb" id="btn-clusters" onclick="toggleLayer('clusters')">
+        <div class="lb-icon">🔘</div><span>Kluster</span><div class="lb-toggle"></div>
+      </button>
+    </div>
+    <div class="sb-section">
+      <div class="sb-head">📷 Kamera</div>
+      <button class="lb" onclick="flyToIndonesia()"><div class="lb-icon">🇮🇩</div><span>Indonesia</span></button>
+      <button class="lb" onclick="flyToWorld()"><div class="lb-icon">🌏</div><span>Seluruh Dunia</span></button>
+      <button class="lb" onclick="toggle3D()"><div class="lb-icon">🏔</div><span>Toggle 3D</span></button>
+      <button class="lb" onclick="toggleGeolocation()"><div class="lb-icon">📌</div><span>Lokasi Saya</span></button>
+    </div>
+  </aside>
+
+  <!-- SIDEBAR TOGGLE -->
+  <button id="sidebar-toggle" onclick="toggleSidebar()" title="Layers (L)">☰</button>
+
+  <!-- RIGHT ICON PANEL -->
+  <div id="right-panel">
+    <button class="icon-btn" onclick="toggleFullscreen()" title="Fullscreen (F)">⛶</button>
+    <button class="icon-btn" id="btn-legend" onclick="toggleLegend()" title="Legend">📋</button>
+    <button class="icon-btn" onclick="toggle3D()" title="3D">🏔</button>
+    <button class="icon-btn" onclick="flyToIndonesia()" title="Indonesia">🇮🇩</button>
+  </div>
+
+  <!-- BASEMAP SWITCHER -->
+  <div id="basemap-switcher">
+    <button class="bm-btn active" data-basemap="dark" onclick="switchBasemap(this,'dark')">Dark</button>
+    <button class="bm-btn" data-basemap="street" onclick="switchBasemap(this,'street')">Street</button>
+    <button class="bm-btn" data-basemap="topo" onclick="switchBasemap(this,'topo')">Demo</button>
+  </div>
+
+  <!-- WEATHER HUD -->
+  <div id="weather-hud">
+    <div class="hud-head">
+      <div class="hud-loc" id="hud-loc">Jakarta</div>
+      <div class="hud-badge high" id="hud-badge">HIGH</div>
+    </div>
+    <div class="hud-metrics">
+      <div class="hud-m">
+        <div class="hud-val" id="hud-temp">31</div>
+        <div style="display:flex;align-items:baseline;gap:2px"><span class="hud-unit">°C</span><span class="hud-lbl" style="margin-top:0">Suhu</span></div>
+      </div>
+      <div class="hud-m">
+        <div class="hud-val" id="hud-wind">18</div>
+        <div style="display:flex;align-items:baseline;gap:2px"><span class="hud-unit">km/h</span><span class="hud-lbl" style="margin-top:0">Angin</span></div>
+      </div>
+    </div>
+    <div class="hud-bars">
+      <div class="hud-bar-row">
+        <div class="hud-bar-lbl">Kelembaban</div>
+        <div class="hud-track"><div class="hud-fill" id="hud-hum-bar" style="width:82%;background:linear-gradient(90deg,#06b6d4,#3b82f6)"></div></div>
+        <div class="hud-barval" id="hud-hum">82%</div>
+      </div>
+      <div class="hud-bar-row">
+        <div class="hud-bar-lbl">Hujan</div>
+        <div class="hud-track"><div class="hud-fill" id="hud-rain-bar" style="width:65%;background:linear-gradient(90deg,#8b5cf6,#06b6d4)"></div></div>
+        <div class="hud-barval" id="hud-rain">65%</div>
+      </div>
+      <div class="hud-bar-row">
+        <div class="hud-bar-lbl">Risiko</div>
+        <div class="hud-track"><div class="hud-fill" id="hud-risk-bar" style="width:85%;background:linear-gradient(90deg,#f59e0b,#ef4444)"></div></div>
+        <div class="hud-barval" id="hud-risk-val">85%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEGEND -->
+  <div id="legend">
+    <div class="leg-title">Legenda Risiko</div>
+    <div class="leg-row"><div class="leg-dot" style="background:#f59e0b"></div><div class="leg-txt">Risiko Tinggi</div></div>
+    <div class="leg-row"><div class="leg-dot" style="background:#ef4444"></div><div class="leg-txt">Kritis</div></div>
+    <div class="leg-row"><div class="leg-dot" style="background:#10b981"></div><div class="leg-txt">Aman</div></div>
+    <div class="leg-row"><div class="leg-dot" style="background:#3b82f6"></div><div class="leg-txt">Stasiun Cuaca</div></div>
+  </div>
+
+  <!-- STATUS BAR -->
+  <div id="status-bar">
+    <div class="si"><span class="si-lbl">LNG</span><span class="si-val" id="si-lng">-</span></div>
+    <div class="si"><span class="si-lbl">LAT</span><span class="si-val" id="si-lat">-</span></div>
+    <div class="si"><span class="si-lbl">ZOOM</span><span class="si-val" id="si-zoom">-</span></div>
+    <div class="si-sp"></div>
+    <div class="si-brand">Andronikos · Weather Intelligence · Indonesia</div>
+  </div>
+
+  <!-- MapLibre GL JS -->
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script type="module">
+    let map = null, popup = null;
+    let is3D = false, isFullscreen = false, sidebarOpen = false;
+    let activeLayers = new Set(['markers']);
+
+    const cities = [
+      {name:'Jakarta',   coords:[106.8456,-6.2088], risk:'high',   pop:10562000,temp:31,wind:18,hum:82,rain:65},
+      {name:'Surabaya',  coords:[112.7509,-7.2575], risk:'medium', pop:2874000, temp:30,wind:12,hum:75,rain:40},
+      {name:'Medan',     coords:[98.6722, 3.5952],  risk:'high',   pop:2210000, temp:29,wind:15,hum:88,rain:72},
+      {name:'Bandung',   coords:[107.6098,-6.9175], risk:'medium', pop:2575000, temp:24,wind:8, hum:70,rain:55},
+      {name:'Makassar',  coords:[119.4221,-5.1477], risk:'low',    pop:1423000, temp:28,wind:11,hum:74,rain:30},
+      {name:'Semarang',  coords:[110.4203,-6.9932], risk:'medium', pop:1760000, temp:29,wind:10,hum:76,rain:45},
+      {name:'Palembang', coords:[104.7458,-2.9761], risk:'high',   pop:1735000, temp:30,wind:14,hum:83,rain:68},
+      {name:'Denpasar',  coords:[115.2126,-8.6705], risk:'low',    pop:897000,  temp:27,wind:9, hum:72,rain:25},
+      {name:'Manado',    coords:[124.8415,1.4748],  risk:'medium', pop:451000,  temp:27,wind:13,hum:79,rain:52},
+      {name:'Pontianak', coords:[109.3425,-0.0263], risk:'high',   pop:673000,  temp:32,wind:7, hum:87,rain:70},
+      {name:'Balikpapan',coords:[116.8136,-1.2675], risk:'low',    pop:752000,  temp:28,wind:10,hum:73,rain:28},
+      {name:'Jayapura',  coords:[140.7180,-2.5916], risk:'low',    pop:383000,  temp:27,wind:8, hum:85,rain:35},
+    ];
+
+    const regions = {type:'FeatureCollection',features:[
+      {type:'Feature',properties:{name:'Sumatera',risk:'high'},   geometry:{type:'Polygon',coordinates:[[[95,6],[108,6],[108,-6],[95,-6],[95,6]]]}},
+      {type:'Feature',properties:{name:'Jawa',risk:'medium'},     geometry:{type:'Polygon',coordinates:[[[105,-5.5],[115.5,-5.5],[115.5,-8.9],[105,-8.9],[105,-5.5]]]}},
+      {type:'Feature',properties:{name:'Kalimantan',risk:'medium'},geometry:{type:'Polygon',coordinates:[[[108,7.5],[119,7.5],[119,-4.5],[108,-4.5],[108,7.5]]]}},
+      {type:'Feature',properties:{name:'Sulawesi',risk:'low'},    geometry:{type:'Polygon',coordinates:[[[118,2],[125.5,2],[125.5,-6],[118,-6],[118,2]]]}},
+      {type:'Feature',properties:{name:'Papua',risk:'low'},       geometry:{type:'Polygon',coordinates:[[[130,-1],[141,-1],[141,-9],[130,-9],[130,-1]]]}},
+    ]};
+
+    function initMap() {
+      const el = document.getElementById('map');
+      if (!el || typeof maplibregl === 'undefined' || el.dataset.initialized) return;
+      el.dataset.initialized = 'true';
+      const rect = el.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) { console.error('[Andronikos] zero dims'); return; }
+
+      map = new maplibregl.Map({
+        container: 'map',
+        style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+        center: [118.0, -2.0], zoom: 4.2,
+        minZoom: 1, maxZoom: 19, renderWorldCopies: true, attributionControl: false,
+      });
+
+      map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
+      popup = new maplibregl.Popup({closeButton:true,closeOnClick:false,offset:18,maxWidth:'260px'});
+
+      map.on('load', () => {
+        console.log('[Andronikos] Map loaded ✓');
+        addAllLayers();
+        setupInteractivity();
+        document.getElementById('loading-overlay').classList.add('hidden');
+        startClock();
+        document.getElementById('si-zoom').textContent = map.getZoom().toFixed(1);
+      });
+
+      map.on('error', e => console.error('[Andronikos] error:', e.error?.message ?? e));
+
+      map.on('mousemove', e => {
+        document.getElementById('si-lng').textContent = e.lngLat.lng.toFixed(5) + '°';
+        document.getElementById('si-lat').textContent = e.lngLat.lat.toFixed(5) + '°';
+      });
+      map.on('zoom', () => { document.getElementById('si-zoom').textContent = map.getZoom().toFixed(1); });
+    }
+
+    const markerInst = [];
+    function addAllLayers() {
+      // Regions
+      map.addSource('regions', {type:'geojson', data:regions});
+      map.addLayer({id:'region-fills',type:'fill',source:'regions',paint:{
+        'fill-color':['match',['get','risk'],'high','#f59e0b','medium','#ef4444','low','#10b981','#3b82f6'],
+        'fill-opacity':0.15
+      }});
+      map.addLayer({id:'region-borders',type:'line',source:'regions',paint:{
+        'line-color':['match',['get','risk'],'high','#f59e0b','medium','#ef4444','low','#10b981','#3b82f6'],
+        'line-width':1.5,'line-opacity':0.6
+      }});
+      map.setLayoutProperty('region-fills','visibility','none');
+      map.setLayoutProperty('region-borders','visibility','none');
+
+      // Heatmap
+      map.addSource('heatmap',{type:'geojson',data:{type:'FeatureCollection',features:cities.map(c=>({
+        type:'Feature',properties:{intensity:c.risk==='high'?1:c.risk==='medium'?.6:.3},
+        geometry:{type:'Point',coordinates:c.coords}
+      }))}});
+      map.addLayer({id:'heatmap-layer',type:'heatmap',source:'heatmap',paint:{
+        'heatmap-weight':['get','intensity'],'heatmap-intensity':2,'heatmap-radius':60,
+        'heatmap-color':['interpolate',['linear'],['heatmap-density'],
+          0,'rgba(0,0,40,0)',0.2,'rgba(6,182,212,.5)',0.5,'rgba(59,130,246,.7)',0.8,'rgba(245,158,11,.8)',1,'rgba(239,68,68,.9)'],
+        'heatmap-opacity':0.75
+      }});
+      map.setLayoutProperty('heatmap-layer','visibility','none');
+
+      // Stations
+      map.addSource('stations',{type:'geojson',data:{type:'FeatureCollection',features:cities.map(c=>({
+        type:'Feature',properties:{name:c.name,temp:c.temp,hum:c.hum,risk:c.risk,pop:c.pop,wind:c.wind,rain:c.rain},
+        geometry:{type:'Point',coordinates:c.coords}
+      }))}});
+      map.addLayer({id:'station-circles',type:'circle',source:'stations',paint:{
+        'circle-color':['match',['get','risk'],'high','#f59e0b','medium','#ef4444','low','#10b981','#3b82f6'],
+        'circle-radius':10,'circle-stroke-color':'#fff','circle-stroke-width':2,'circle-opacity':0.85
+      }});
+      map.addLayer({id:'city-labels',type:'symbol',source:'stations',layout:{
+        'text-field':['get','name'],
+        'text-font':['Open Sans Regular','Arial Unicode MS Regular'],
+        'text-size':11,'text-anchor':'top','text-offset':[0,1.2]
+      },paint:{'text-color':'#e2e8f0','text-halo-color':'rgba(5,12,26,.9)','text-halo-width':2}});
+      map.setLayoutProperty('station-circles','visibility','none');
+      map.setLayoutProperty('city-labels','visibility','none');
+
+      // Routes
+      map.addSource('routes',{type:'geojson',data:{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:cities.map(c=>c.coords)}}});
+      map.addLayer({id:'route-lines',type:'line',source:'routes',paint:{
+        'line-color':'#3b82f6','line-width':2,'line-opacity':0.5,'line-dasharray':[4,4]
+      }});
+      map.setLayoutProperty('route-lines','visibility','none');
+
+      // Clusters
+      map.addSource('clusters',{type:'geojson',cluster:true,clusterMaxZoom:10,clusterRadius:60,
+        data:{type:'FeatureCollection',features:cities.map(c=>({
+          type:'Feature',properties:{name:c.name},geometry:{type:'Point',coordinates:c.coords}
+        }))}});
+      map.addLayer({id:'clusters',type:'circle',source:'clusters',filter:['has','point_count'],paint:{
+        'circle-color':['step',['get','point_count'],'#3b82f6',3,'#f59e0b',6,'#ef4444'],
+        'circle-radius':['step',['get','point_count'],18,3,24,6,32],
+        'circle-opacity':0.85,'circle-stroke-color':'#fff','circle-stroke-width':2
+      }});
+      map.addLayer({id:'cluster-count',type:'symbol',source:'clusters',filter:['has','point_count'],
+        layout:{'text-field':'{point_count_abbreviated}','text-font':['Open Sans Regular','Arial Unicode MS Regular'],'text-size':12},
+        paint:{'text-color':'#fff'}});
+      map.setLayoutProperty('clusters','visibility','none');
+      map.setLayoutProperty('cluster-count','visibility','none');
+
+      // HTML Markers (default ON)
+      addMarkers();
+    }
+
+    function addMarkers() {
+      cities.forEach(city => {
+        const color = city.risk==='high'?'#f59e0b':city.risk==='medium'?'#ef4444':'#10b981';
+        const size  = city.risk==='high'?20:city.risk==='medium'?17:15;
+        const el = document.createElement('div');
+        el.className = 'city-marker';
+        const inner = document.createElement('div');
+        inner.className = 'cm-inner';
+        inner.style.cssText = `width:${size}px;height:${size}px;background:${color};color:${color};`;
+        el.appendChild(inner);
+        el.title = city.name;
+        const m = new maplibregl.Marker({element:el,anchor:'center'}).setLngLat(city.coords).addTo(map);
+        markerInst.push(m);
+        el.addEventListener('click', () => {
+          updateHUD(city);
+          popup.setLngLat(city.coords)
+            .setHTML(`<div class="pt">${city.name}</div>
+              <div class="pr"><span class="pk">Risiko</span><span class="prisk ${city.risk}">${city.risk.toUpperCase()}</span></div>
+              <div class="pr"><span class="pk">Suhu</span><span class="pv">${city.temp}°C</span></div>
+              <div class="pr"><span class="pk">Angin</span><span class="pv">${city.wind} km/h</span></div>
+              <div class="pr"><span class="pk">Kelembaban</span><span class="pv">${city.hum}%</span></div>
+              <div class="pr"><span class="pk">Curah Hujan</span><span class="pv">${city.rain}%</span></div>
+              <div class="pr"><span class="pk">Populasi</span><span class="pv">${city.pop.toLocaleString('id')}</span></div>`)
+            .addTo(map);
+          map.flyTo({center:city.coords,zoom:8,duration:1600,essential:true});
+        });
+      });
+    }
+
+    function updateHUD(c) {
+      document.getElementById('hud-loc').textContent = c.name;
+      const b = document.getElementById('hud-badge');
+      b.textContent = c.risk.toUpperCase(); b.className = `hud-badge ${c.risk}`;
+      document.getElementById('hud-temp').textContent = c.temp;
+      document.getElementById('hud-wind').textContent = c.wind;
+      document.getElementById('hud-hum').textContent = c.hum + '%';
+      document.getElementById('hud-hum-bar').style.width = c.hum + '%';
+      document.getElementById('hud-rain').textContent = c.rain + '%';
+      document.getElementById('hud-rain-bar').style.width = c.rain + '%';
+      const rp = c.risk==='high'?85:c.risk==='medium'?50:20;
+      document.getElementById('hud-risk-val').textContent = rp + '%';
+      document.getElementById('hud-risk-bar').style.width = rp + '%';
+    }
+
+    function setupInteractivity() {
+      map.on('mouseenter','station-circles', e => {
+        map.getCanvas().style.cursor = 'pointer';
+        const p = e.features[0].properties;
+        popup.setLngLat(e.lngLat).setHTML(
+          `<div class="pt">${p.name}</div>
+           <div class="pr"><span class="pk">Risiko</span><span class="prisk ${p.risk}">${p.risk.toUpperCase()}</span></div>
+           <div class="pr"><span class="pk">Suhu</span><span class="pv">${p.temp}°C</span></div>
+           <div class="pr"><span class="pk">Kelembaban</span><span class="pv">${p.hum}%</span></div>`
+        ).addTo(map);
+      });
+      map.on('mouseleave','station-circles', () => { map.getCanvas().style.cursor=''; popup.remove(); });
+      map.on('click','region-fills', e => {
+        const p = e.features[0].properties;
+        popup.setLngLat(e.lngLat).setHTML(`<div class="pt">${p.name}</div><div class="pr"><span class="pk">Risiko</span><span class="prisk ${p.risk}">${p.risk.toUpperCase()}</span></div>`).addTo(map);
+      });
+      map.on('click','clusters', e => {
+        const feat = map.queryRenderedFeatures(e.point,{layers:['clusters']});
+        map.getSource('clusters').getClusterExpansionZoom(feat[0].properties.cluster_id).then(z => map.flyTo({center:e.lngLat,zoom:z,duration:1000}));
+      });
+    }
+
+    window.toggleLayer = function(id) {
+      const btn = document.getElementById('btn-'+id);
+      const on = activeLayers.has(id);
+      ({
+        markers: () => markerInst.forEach(m => m.getElement().style.display = on?'none':''),
+        heatmap: () => map.setLayoutProperty('heatmap-layer','visibility',on?'none':'visible'),
+        fills:   () => ['region-fills','region-borders'].forEach(l=>map.setLayoutProperty(l,'visibility',on?'none':'visible')),
+        circles: () => ['station-circles','city-labels'].forEach(l=>map.setLayoutProperty(l,'visibility',on?'none':'visible')),
+        lines:   () => map.setLayoutProperty('route-lines','visibility',on?'none':'visible'),
+        clusters:() => ['clusters','cluster-count'].forEach(l=>map.setLayoutProperty(l,'visibility',on?'none':'visible')),
+      })[id]?.();
+      on ? activeLayers.delete(id) : activeLayers.add(id);
+      btn?.classList.toggle('active', !on);
+    };
+
+    window.switchBasemap = function(el, name) {
+      document.querySelectorAll('.bm-btn').forEach(b=>b.classList.remove('active'));
+      el.classList.add('active');
+      const styles = {
+        dark:   'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+        street: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+        topo:   'https://demotiles.maplibre.org/style.json',
+      };
+      map.setStyle(styles[name] || styles.dark);
+      map.once('style.load', () => {
+        ['region-fills','region-borders','heatmap-layer','station-circles','city-labels','route-lines','clusters','cluster-count']
+          .forEach(l => { try { if(map.getLayer(l)) map.removeLayer(l); } catch(e){} });
+        ['regions','heatmap','stations','routes','clusters']
+          .forEach(s => { try { if(map.getSource(s)) map.removeSource(s); } catch(e){} });
+        markerInst.forEach(m => m.remove()); markerInst.length = 0;
+        activeLayers = new Set(['markers']);
+        document.querySelectorAll('.lb').forEach(b=>b.classList.remove('active'));
+        document.getElementById('btn-markers')?.classList.add('active');
+        addAllLayers(); setupInteractivity();
+      });
+    };
+
+    window.setMode = function(el, mode) {
+      document.querySelectorAll('.nav-mode-btn').forEach(b=>b.classList.remove('active'));
+      el.classList.add('active');
+    };
+
+    window.flyToIndonesia = () => map?.flyTo({center:[118,-2],zoom:4.5,duration:2000,essential:true});
+    window.flyToWorld     = () => map?.flyTo({center:[0,20],zoom:1.5,duration:2000,essential:true});
+    window.toggle3D       = () => { is3D=!is3D; map?.easeTo({pitch:is3D?55:0,bearing:is3D?30:0,duration:1200}); };
+    window.toggleGeolocation = () => {
+      if(!navigator.geolocation) return;
+      navigator.geolocation.getCurrentPosition(p => {
+        map?.flyTo({center:[p.coords.longitude,p.coords.latitude],zoom:10,duration:1500});
+        popup.setLngLat([p.coords.longitude,p.coords.latitude]).setHTML('<div class="pt">📍 Lokasi Anda</div>').addTo(map);
+      });
+    };
+    window.toggleFullscreen = () => {
+      if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+      else document.exitFullscreen().catch(()=>{});
+    };
+    window.toggleSidebar = () => {
+      sidebarOpen = !sidebarOpen;
+      document.getElementById('sidebar').classList.toggle('open', sidebarOpen);
+    };
+    window.toggleLegend = () => {
+      const l = document.getElementById('legend');
+      l.classList.toggle('visible');
+      document.getElementById('btn-legend').classList.toggle('active', l.classList.contains('visible'));
+    };
+
+    function startClock() {
+      const tick = () => {
+        const n = new Date();
+        const h = String(n.getUTCHours()).padStart(2,'0');
+        const m = String(n.getUTCMinutes()).padStart(2,'0');
+        const s = String(n.getUTCSeconds()).padStart(2,'0');
+        document.getElementById('nav-clock').textContent = `${h}:${m}:${s} UTC`;
+      };
+      tick(); setInterval(tick, 1000);
+    }
+
+    document.addEventListener('keydown', e => {
+      if(e.key==='l'||e.key==='L') toggleSidebar();
+      if(e.key==='f'||e.key==='F') toggleFullscreen();
+      if(e.key==='i'||e.key==='I') flyToIndonesia();
+      if(e.key==='3') toggle3D();
+    });
+
+    // Boot
+    if(document.getElementById('map') && typeof maplibregl !== 'undefined') {
+      initMap();
+    } else {
+      let attempts = 0;
+      const initWhenReady = () => {
+        attempts++;
+        const el = document.getElementById('map');
+        if(el && !el.dataset.initialized && typeof maplibregl !== 'undefined') initMap();
+        else if(attempts < 100) setTimeout(initWhenReady, 100);
+        else console.error('[Andronikos] Failed to init after 100 attempts');
+      };
+      initWhenReady();
+    }
+  </script>
+</body>
+</html>

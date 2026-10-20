@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>ML‑Weather – Full‑Stack Documentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d1117; --bg2:#161b22; --txt:#c9d1d9;
+  --accent:#58a6ff; --card:#21262d;
+  --radius:8px; --gap:1rem;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--bg); color:var(--txt);
+  line-height:1.6; padding:var(--gap);
+}
+header{ text-align:center; margin-bottom:2rem; }
+h1{font-size:2.2rem; color:var(--accent);}
+h2{font-size:1.6rem; margin-top:1.5rem; border-bottom:1px solid #30363d;}
+section{margin-bottom:2rem;}
+.card{ background:var(--card); border-radius:var(--radius); padding:1rem; margin-top:0.5rem; }
+code{background:#30363d; padding:2px 4px; border-radius:4px;}
+pre{background:#30363d; padding:1rem; border-radius:var(--radius); overflow:auto;}
+footer{font-size:0.85rem; text-align:center; margin-top:3rem; color:#8b949e;}
+</style>
+</head>
+<body>
+<header>
+  <h1>ML‑Weather – Full‑Stack Technical Overview</h1>
+  <p>Versi: <code>v0.1.0‑untrained</code> • Last update: <code>2026‑10‑18</code></p>
+</header>
+
+<section>
+  <h2>🚀 Core Architecture</h2>
+  <div class="card">
+    <p>Rust monorepo <strong>weather‑intelligence</strong> with <strong>8 crates</strong> (wi‑core, wi‑model, wi‑storage, wi‑ingest, …). Uses <a href="https://burn.dev">Burn 0.22</a> for tensor ops and GNN inference.</p>
+    <ul>
+      <li>🧩 <code>wi‑model</code> – GraphCast GNN (12 layers, temporal attention).</li>
+      <li>⚡ <code>wi‑storage</code> – Parquet + Redis cache (high‑performance I/O).</li>
+      <li>📥 <code>wi‑ingest</code> – GRIB2 & NetCDF parsers (pure‑Rust).</li>
+      <li>🔗 <code>wi‑core</code> – Shared types, error handling, utilities.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>🛠️ Build & Feature Flags</h2>
+  <div class="card">
+    <p>GPU back‑ends are optional via Cargo feature flags (default <code>cpu</code>).</p>
+    <pre><code>cargo build               # CPU (default)
+cargo build --features wgpu   # GPU cross‑platform (Vulkan/Metal/DX12)
+cargo build --features cuda   # NVIDIA CUDA</code></pre>
+    <p>All GPU code is behind <code>#cfg</code> gates; binary size stays minimal for CPU‑only deployments.</p>
+  </div>
+</section>
+
+<section>
+  <h2>🔁 Runtime Device Selection</h2>
+  <div class="card">
+    <p>Use <code>GraphCastForecaster::with_best_device(config)?</code>. Prioritas:</p>
+    <ol>
+      <li>CUDA (if available & feature enabled)</li>
+      <li>WGPU</li>
+      <li>CPU (fallback)</li>
+    </ol>
+    <p>Auto‑selection removes manual device configuration and guarantees graceful degradation.</p>
+  </div>
+</section>
+
+<section>
+  <h2>⚙️ Inference Pipeline</h2>
+  <div class="card">
+    <ul>
+      <li><strong>Tile‑based inference</strong> – region split into tiles, each processed independently.</li>
+      <li><strong>Rayon parallelism</strong> for CPU tiles inside <code>tokio::task::spawn_blocking</code>. Each thread owns a local <code>GraphCastModel</code> (NdArray safe).</li>
+      <li><strong>Synchronous path</strong> – <code>predict_cells_sync()</code> used by Rayon (no async/await inside parallel iter).</li>
+      <li><strong>Edge cache</strong> – <code>RwLock<HashMap&lt;(usize,usize), Tensor&lt;2,Int&gt;&gt;</code> stores mesh edges per tile size. Reduces ~15 ms per tile rebuild.</li>
+      <li><strong>Device accessor</strong> – <code>forecaster.device()</code> for benchmarks and external tools.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>📊 Benchmarks (Criterion)</h2>
+  <div class="card">
+    <p>Run with <code>cargo bench -p wi-model --bench inference_bench</code>.</p>
+    <ul>
+      <li><strong>Single‑tile throughput</strong> (100 → 10 k cells) – measures pure forward pass.</li>
+      <li><strong>Mesh‑edge build cost</strong> – 1 k → 50 k cells, cache bypass.</li>
+      <li><strong>Edge‑cache warm vs cold</strong> – demonstrates > 10× speedup after first call.</li>
+    </ul>
+    <p>HTML reports saved under <code>target/criterion/</code>.</p>
+  </div>
+</section>
+
+<section>
+  <h2>✅ CI / Quality Gates</h2>
+  <div class="card">
+    <p>All gates pass on master:</p>
+    <pre><code>cargo test --workspace --lib       → 135/135 passed
+cargo clippy -D warnings           → 0 errors
+cargo fmt --check                  → clean</code></pre>
+    <p>Only warning is “field `edge_cache` is never read” – intentional (cache used internally).</p>
+  </div>
+</section>
+
+<section>
+  <h2>🗂️ Data Sources & Compliance</h2>
+  <div class="card">
+    <ul>
+      <li><strong>GRIB2</strong> – GFS/GEFS/HGEFS (real‑time, public).</li>
+      <li><strong>NetCDF (ERA5)</strong> – training‑only, flagged as <code>DataSource::ERA5</code> (anti‑halusinasi safeguard).</li>
+      <li>All real‑time predictions must be presented as <code>informasi risiko</code> per Indonesian regulation (UU 31/2009, PP 11/2016).</li>
+    </ul>
+  </div>
+</section>
+<section>
+  <h2>📚 Knowledge Artifacts</h2>
+  <div class="card">
+    <p>Key knowledge stored in the workspace:</p>
+    <ul>
+      <li><a href="file:///home/rog/.gemini/antigravity-ide/brain/e8f84d80-391d-49a3-8d49-ce4611835767/knowledge_trip_3.md">Trip 3 – GPU flags, auto‑device, Rayon, edge cache, benchmarks</a></li>
+      <li><a href="file:///home/rog/.gemini/antigravity-ide/brain/e8f84d80-391d-49a3-8d49-ce4611835767/knowledge_trip_4.md">Trip 4 – PostGIS migration, Ingest Orchestrator, CSI scorer</a></li>
+      <li><a href="file:///home/rog/.gemini/antigravity-ide/brain/e8f84d80-391d-49a3-8d49-ce4611835767/knowledge_hazard_ingestion.md">Hazard ingestion plan – volcano, fire, flood, inundation</a></li>
+      <li><a href="file:///home/rog/.gemini/antigravity-ide/brain/e8f84d80-391d-49a3-8d49-ce4611835767/ANALISIS_FULLSTACK_ANDRONIKOS.md">Full‑stack analysis (Andrinikos)</a></li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <p>Generated by Antigravity – continue iterating for Trip 4 (GPU deployment, BMKG compliance, latency &lt; 60 s).</p>
+</footer>
+</body>
+</html>

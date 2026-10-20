@@ -1,0 +1,1 @@
+/* Styles are defined in index.html */

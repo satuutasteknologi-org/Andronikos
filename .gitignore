@@ -1,0 +1,114 @@
+# Build artifacts & dependencies (TIDAK di-track sama sekali)
+target/
+target*/
+**/target/
+dist/
+dist*/
+**/dist/
+node_modules/
+**/node_modules/
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Large data files (TIDAK di-track - gunakan DVC atau cloud storage)
+*.csv
+*.parquet
+*.arrow
+*.h5
+*.hdf5
+*.model
+*.bin
+*.pt
+*.pth
+*.onnx
+*.safetensors
+checkpoints/
+data/
+*.npz
+*.npy
+
+# Media files (large)
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.ico
+*.bmp
+*.tiff
+*.webp
+*.svg
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+*.mp3
+*.wav
+*.flac
+*.ogg
+
+# Archives
+*.zip
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.rar
+*.7z
+
+# IDE & OS
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs & temp
+*.log
+*.tmp
+*.temp
+*.d
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.crt
+
+# Docker
+.docker/
+
+# Cargo - lock files untuk workspace (binary apps boleh commit, library tidak)
+Cargo.lock
+
+# Wasm / Web
+*.wasm
+*.js.map
+*.wasm.map
+
+# Coverage & profiling
+coverage/
+*.profraw
+*.profdata
+
+# Package managers
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+# OS generated
+*.orig
+*.bak
+*.backup

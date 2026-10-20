@@ -1,0 +1,47 @@
+[package]
+name = "wi-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "CLI for Weather Intelligence Engine"
+license.workspace = true
+
+[[bin]]
+name = "wi"
+path = "src/main.rs"
+
+[dependencies]
+wi-core = { path = "../wi-core" }
+wi-ingest = { path = "../wi-ingest" }
+wi-model = { path = "../wi-model" }
+wi-api = { path = "../wi-api" }
+wi-verify = { path = "../wi-verify" }
+wi-storage = { path = "../wi-storage" }
+
+tokio.workspace = true
+clap.workspace = true
+anyhow.workspace = true
+eyre.workspace = true
+color-eyre.workspace = true
+
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+figment.workspace = true
+chrono.workspace = true
+humantime.workspace = true
+
+indicatif.workspace = true
+
+burn.workspace = true
+burn-ndarray = { workspace = true, features = ["blas-openblas"] }
+
+axum.workspace = true
+http.workspace = true
+tower.workspace = true
+tower-http.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+assert_cmd = "2.0"
+predicates = "3.1"

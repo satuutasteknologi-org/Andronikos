@@ -1,0 +1,38 @@
+[package]
+name = "wi-storage"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "Storage backends: ATD binary, Parquet, PostgreSQL, Redis"
+license.workspace = true
+
+[dependencies]
+wi-core = { path = "../wi-core" }
+
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+bincode.workspace = true
+ndarray.workspace = true
+parquet.workspace = true
+arrow.workspace = true
+
+zstd.workspace = true
+
+chrono.workspace = true
+parking_lot.workspace = true
+walkdir = "2.5"
+tempfile.workspace = true
+
+sqlx.workspace = true
+redis.workspace = true
+geo.workspace = true
+geojson.workspace = true
+
+thiserror.workspace = true
+tracing.workspace = true
+anyhow.workspace = true
+async-trait.workspace = true
+
+[dev-dependencies]
+tokio-test = "0.4"

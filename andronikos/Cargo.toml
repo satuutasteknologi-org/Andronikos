@@ -1,0 +1,19 @@
+# Andronikos Frontend Workspace
+# Weather Intelligence UI for Indonesia — Leptos + MapLibre
+
+[workspace]
+resolver = "2"
+members = ["leptos"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+
+[profile.dev]
+opt-level = 0
+debug = 2

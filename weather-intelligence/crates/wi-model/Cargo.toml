@@ -1,0 +1,63 @@
+[package]
+name = "wi-model"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "ML Models: Burn native (GraphCast) + ONNX inference (Downscaler)"
+license.workspace = true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Feature Flags — GPU Backend Selection
+#
+# Default: CPU (NdArray + BLAS OpenBLAS) — portable, tidak butuh driver
+# cuda   : NVIDIA GPU via burn-cuda (butuh CUDA 11.8+)
+# wgpu   : Cross-platform GPU via burn-wgpu (Vulkan/Metal/DX12)
+#
+# Cara pakai:
+#   cargo build                        # CPU default
+#   cargo build --features wgpu        # GPU via WGPU
+#   cargo build --features cuda        # GPU via CUDA
+#   cargo build --no-default-features --features cuda  # CUDA only
+#
+# Di runtime: lihat GraphCastForecaster::with_best_device()
+# ─────────────────────────────────────────────────────────────────────────────
+[features]
+default  = ["cpu"]
+cpu      = ["burn-ndarray"]
+wgpu     = ["burn-wgpu"]
+cuda     = ["burn-cuda"]
+
+[dependencies]
+wi-core = { path = "../wi-core" }
+wi-grid = { path = "../wi-grid" }
+
+burn.workspace = true
+
+# Backend: hanya satu yang aktif di runtime, semua tersedia di build
+burn-ndarray = { workspace = true, optional = true }
+burn-wgpu    = { workspace = true, optional = true }
+burn-cuda    = { workspace = true, optional = true }
+
+ort = { workspace = true, features = ["ndarray"] }
+
+ndarray.workspace = true
+tokio = { workspace = true, features = ["rt-multi-thread"] }
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+parking_lot.workspace = true
+async-trait.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+rayon.workspace = true
+futures.workspace = true
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["async_tokio"] }
+tokio     = { workspace = true, features = ["rt-multi-thread", "macros"] }
+
+[[bench]]
+name    = "inference_bench"
+harness = false

@@ -1,0 +1,68 @@
+[package]
+name = "wi-ingest"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "Data ingestion, validation, gap filling, and preprocessing"
+license.workspace = true
+
+[dependencies]
+wi-core = { path = "../wi-core" }
+wi-grid = { path = "../wi-grid" }
+wi-storage = { path = "../wi-storage" }
+
+# Format parser (pure Rust — tidak butuh C system library)
+grib = "0.19"                # GRIB Edition 1 & 2 decoder (GFS, GEFS, HGEFS)
+netcdf-reader = "0.9"        # NetCDF-3 classic + NetCDF-4 (ERA5 .nc files)
+
+tokio.workspace = true
+reqwest.workspace = true
+async-stream.workspace = true
+futures.workspace = true
+http.workspace = true
+
+serde.workspace = true
+serde_json.workspace = true
+bincode.workspace = true
+ndarray.workspace = true
+parquet.workspace = true
+arrow.workspace = true
+
+zstd.workspace = true
+
+geo.workspace = true
+geo-types.workspace = true
+geojson.workspace = true
+h3o.workspace = true
+
+chrono.workspace = true
+uuid.workspace = true
+
+async-trait = "0.1"
+
+tracing.workspace = true
+tracing-subscriber.workspace = true
+tracing-appender.workspace = true
+
+figment.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+once_cell.workspace = true
+parking_lot.workspace = true
+dashmap.workspace = true
+indicatif.workspace = true
+bytesize.workspace = true
+
+sha2.workspace = true
+tempfile.workspace = true
+walkdir.workspace = true
+lz4_flex.workspace = true
+brotli.workspace = true
+flate2.workspace = true
+
+quick-xml = "0.31"
+csv = "1.3"
+
+[dev-dependencies]
+proptest = "1.5"
+tokio-test = "0.4"

@@ -1,0 +1,62 @@
+[package]
+name = "wi-api"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "REST/gRPC API Server for Weather Intelligence"
+license.workspace = true
+
+[[bin]]
+name = "wi-serve"
+path = "src/bin/wi-serve.rs"
+
+[dependencies]
+wi-core = { path = "../wi-core" }
+wi-model = { path = "../wi-model" }
+wi-storage = { path = "../wi-storage" }
+wi-verify = { path = "../wi-verify" }
+
+tokio.workspace = true
+axum.workspace = true
+tower.workspace = true
+tower-http.workspace = true
+http.workspace = true
+
+tonic.workspace = true
+prost.workspace = true
+prost-types.workspace = true
+
+serde.workspace = true
+serde_json.workspace = true
+
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+figment.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+
+metrics.workspace = true
+metrics-exporter-prometheus.workspace = true
+prometheus.workspace = true
+
+parking_lot.workspace = true
+chrono.workspace = true
+async-stream = "0.1"
+
+redis.workspace = true
+tokio-stream.workspace = true
+
+burn.workspace = true
+burn-ndarray = { workspace = true, features = ["blas-openblas"] }
+
+jsonwebtoken.workspace = true
+
+[build-dependencies]
+tonic-build = "0.13"
+prost-build = "0.13"
+
+[dev-dependencies]
+hyper-util = { version = "0.1", features = ["tokio", "server"] }
+tokio-test = "0.4"
+reqwest = { version = "0.12", features = ["json"] }
