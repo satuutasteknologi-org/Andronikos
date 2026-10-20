@@ -14,9 +14,7 @@ Proyek Machine Learning untuk prediksi cuaca dan kebakaran lahan gambut di Nusan
 
 | Folder | Deskripsi |
 |--------|-----------|
-| `AetherForge/` | Core engine Rust (API, CLI, Core, Data, ML, Spatial, UI) |
 | `andronikos/` | Frontend Leptos (Rust WASM) |
-| `tera-porte/` | Project legacy/archived |
 | `training/` | Model training Python (GraphCast, Downscaler) |
 | `weather-intelligence/` | Crates Rust untuk ingest, model, storage, verify |
 
@@ -32,7 +30,6 @@ Lihat detail di: [GitHub Actions](https://github.com/satuutasteknologi-org/Andro
 
 ```bash
 # Rust (per project)
-cd AetherForge && cargo build
 cd andronikos && cargo build
 cd weather-intelligence && cargo build
 
