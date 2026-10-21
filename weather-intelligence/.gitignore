@@ -1,0 +1,17 @@
+target/
+**/*.rs.bk
+Cargo.lock
+.env
+*.log
+*.sqlite
+*.db
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*.orig
+*.tmp
+coverage/
+*.profraw
+*.profdata

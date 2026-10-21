@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark light"><title>Andronikos Weather Intelligence — Enterprise Documentation</title>
+<script>try{var t=localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');document.documentElement.dataset.theme=t}catch(e){}</script>
+<style>
+:root{--sbh:30px;--bg:#0d1117;--sf:#141a23;--sf2:#1b232e;--ln:#262f3c;--tx:#e7ebf0;--mu:#98a2b3;--ac:#38bdf8;--ok:#34d399;--wn:#fbbf24;--er:#f87171;--sb:264px;--f:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;--m:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+[data-theme=light]{--bg:#fff;--sf:#f6f8fa;--sf2:#edf1f5;--ln:#dde3ea;--tx:#17202c;--mu:#566274;--ac:#0369a1;--ok:#047857;--wn:#b45309;--er:#b91c1c}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{padding-bottom:var(--sbh);font:15px/1.65 var(--f);background:var(--bg);color:var(--tx);-webkit-font-smoothing:antialiased}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px;border-radius:4px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--ac);color:#000;padding:8px 12px;border-radius:6px;z-index:200}.skip:focus{left:8px}
+.sidebar{position:fixed;inset:0 auto var(--sbh) 0;width:var(--sb);background:var(--sf);border-right:1px solid var(--ln);display:flex;flex-direction:column;z-index:60}
+.brand{display:flex;gap:10px;align-items:center;padding:16px 16px 12px}.brand strong{display:block;font-size:15px;line-height:1.2}.brand span:last-child,.brand div span{display:block;font-size:12px;color:var(--mu)}
+.mark{width:32px;height:32px;border-radius:8px;background:var(--ac);color:#04121c;font-weight:800;display:grid;place-items:center;flex:none}
+.sbtn{margin:0 12px 8px;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border:1px solid var(--ln);border-radius:8px;color:var(--mu);font:13px var(--f);cursor:pointer}.sbtn:hover{border-color:var(--mu)}
+kbd{font:11px var(--m);padding:1px 6px;border:1px solid var(--ln);border-radius:4px;background:var(--sf2);color:var(--mu)}
+.nav{flex:1;overflow-y:auto;padding:4px 12px 24px;overscroll-behavior:contain}
+.nav-group{margin-top:14px}.nav-group-title{display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:var(--mu);padding:4px 10px;cursor:pointer;user-select:none;border-radius:6px}
+.nav-group-title:hover{color:var(--tx)}.nav-group-title::after{content:"";width:6px;height:6px;border:solid currentColor;border-width:0 1.5px 1.5px 0;transform:rotate(45deg) translateY(-2px);align-self:center;transition:transform .15s}
+.nav-group.closed .nav-group-title::after{transform:rotate(-45deg)}.nav-group.closed .nav-item{display:none}
+.nav-link{display:block;padding:5px 10px;margin:1px 0;border-radius:6px;color:var(--mu);font-size:13.5px}.nav-link:hover{background:var(--sf2);color:var(--tx);text-decoration:none}
+.nav-link.active{background:color-mix(in srgb,var(--ac) 14%,transparent);color:var(--ac);font-weight:600}
+.shell{margin-left:var(--sb)}.top{position:sticky;top:0;z-index:40;height:52px;display:flex;align-items:center;gap:8px;padding:0 20px;background:var(--bg);border-bottom:1px solid var(--ln)}
+.crumb{font-size:13px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sp{flex:1}
+.ib{width:34px;height:34px;display:grid;place-items:center;background:none;border:1px solid transparent;border-radius:8px;color:var(--mu);cursor:pointer}.ib:hover{background:var(--sf2);color:var(--tx)}.ib svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#menu{display:none}.bar{position:fixed;top:0;left:0;right:0;height:2px;background:var(--ac);transform:scaleX(0);transform-origin:0 50%;z-index:80}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:48px;max-width:1120px;margin:0 auto;padding:0 32px}
+.main{min-width:0;padding-bottom:64px}.header{padding:44px 0 32px}.header h1{font-size:clamp(28px,4vw,40px);line-height:1.15;letter-spacing:-.02em;margin-bottom:14px}.header p{color:var(--mu);font-size:16.5px;max-width:64ch}
+.status-bar{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:24px;padding-top:18px;border-top:1px solid var(--ln)}.status-item{display:flex;align-items:center;gap:8px;font-size:13px}.status-label{color:var(--mu)}.status-value{font-weight:600}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}.status-dot.warn{background:var(--wn)}
+.section{padding:44px 0 8px;border-top:1px solid var(--ln);scroll-margin-top:52px;content-visibility:auto;contain-intrinsic-size:auto 800px}
+.section h2{font-size:26px;line-height:1.25;letter-spacing:-.015em;margin-bottom:16px}.section h3{font-size:18px;margin:32px 0 10px;scroll-margin-top:68px}.section h4{font-size:15px;margin:20px 0 6px;scroll-margin-top:68px}
+.section p{max-width:75ch;margin:0 0 12px;color:var(--tx)}.section ul,.section ol{padding-left:22px;margin:0 0 14px}.section li{margin:4px 0;max-width:75ch}
+code{font:12.5px var(--m);background:var(--sf2);padding:.1em .4em;border-radius:4px;overflow-wrap:anywhere}
+.tbl{overflow-x:auto;border:1px solid var(--ln);border-radius:8px;margin:16px 0 20px}table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-weight:600;color:var(--mu);background:var(--sf);padding:10px 14px;white-space:nowrap}td{padding:10px 14px;border-top:1px solid var(--ln);vertical-align:top}tbody tr:hover{background:var(--sf)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin:12px 0 20px}.card{background:var(--sf);border:1px solid var(--ln);border-radius:8px;padding:14px 16px}.card h4{margin:0 0 6px;font-size:14px}.card p{font-size:13.5px;color:var(--mu);margin:0}
+.badge{--c:var(--mu);display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
+.badge-ok{--c:var(--ok)}.badge-warn,.badge-partial{--c:var(--wn)}.badge-no{--c:var(--er)}
+.alert{--c:var(--ac);border:1px solid color-mix(in srgb,var(--c) 40%,transparent);border-left:3px solid var(--c);background:color-mix(in srgb,var(--c) 8%,transparent);border-radius:8px;padding:12px 16px;margin:16px 0}.alert-warning{--c:var(--wn)}.alert-error{--c:var(--er)}.alert strong{color:var(--c)}.alert p{margin:4px 0 0}
+.code-block{position:relative;border:1px solid var(--ln);border-radius:8px;background:var(--sf);margin:14px 0 20px;overflow:hidden}.code-block-header{padding:7px 14px;border-bottom:1px solid var(--ln);font:12px var(--m);color:var(--mu)}
+.code-block pre,pre{overflow-x:auto;padding:14px 16px;font:12.5px/1.6 var(--m);tab-size:2}.code-block pre code,pre code{background:none;padding:0;font:inherit}
+.cp{position:absolute;top:6px;right:8px;font:12px var(--f);color:var(--mu);background:var(--sf2);border:1px solid var(--ln);border-radius:6px;padding:2px 9px;cursor:pointer;opacity:0;transition:opacity .12s}.code-block:hover .cp,.cp:focus-visible{opacity:1}
+.progress{height:6px;border-radius:3px;background:var(--sf2);overflow:hidden}.progress-bar{height:100%;background:var(--ac)}
+.diagram-container{background:var(--sf);border:1px solid var(--ln);border-radius:10px;margin:18px 0 26px;overflow:hidden}.diagram-title{padding:10px 16px;font-weight:600;font-size:14px;border-bottom:1px solid var(--ln)}
+.dgw{overflow-x:auto}.ascii{margin:0;padding:18px 20px;font:12.5px/1.2 var(--m);font-variant-ligatures:none;letter-spacing:0;white-space:pre;color:var(--tx);overflow:visible;width:max-content;min-width:100%}
+footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--ln);color:var(--mu);font-size:13px}
+.toc{position:sticky;top:76px;align-self:start;max-height:calc(100vh - 100px - var(--sbh));overflow:auto;padding:44px 0 0;font-size:13px}.toc b{display:block;font-size:12px;color:var(--mu);margin-bottom:8px}.toc:empty{display:none}
+.toc a{display:block;padding:3px 0 3px 12px;border-left:2px solid var(--ln);color:var(--mu)}.toc a:hover{color:var(--tx);text-decoration:none}.toc a.on{color:var(--ac);border-left-color:var(--ac)}
+#pal{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.55);display:flex;justify-content:center;align-items:flex-start;padding:12vh 16px 0}#pal[hidden]{display:none}
+.pbox{width:100%;max-width:600px;background:var(--bg);border:1px solid var(--ln);border-radius:12px;box-shadow:0 24px 60px rgba(0,0,0,.45);overflow:hidden}
+#pq{width:100%;padding:14px 16px;background:none;border:0;border-bottom:1px solid var(--ln);color:var(--tx);font:16px var(--f);outline:none}
+#pr{list-style:none;max-height:52vh;overflow:auto;padding:6px}#pr li{padding:8px 10px;border-radius:8px;cursor:pointer}#pr li[aria-selected=true]{background:color-mix(in srgb,var(--ac) 14%,transparent)}
+#pr b{display:block;font-size:14px;font-weight:600}#pr small{display:block;color:var(--mu);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pe{padding:18px;color:var(--mu);font-size:14px}
+.scrim{display:none}
+.sbar{position:fixed;left:0;right:0;bottom:0;height:var(--sbh);z-index:70;display:flex;align-items:center;gap:16px;padding:0 16px;background:var(--sf);border-top:1px solid var(--ln);font:12px var(--m);color:var(--mu);font-variant-numeric:tabular-nums;white-space:nowrap}
+.live{display:flex;align-items:center;gap:7px;font:600 12px var(--f);color:var(--ok)}.live i{width:7px;height:7px;border-radius:50%;background:currentColor;animation:pl 2s infinite}
+@keyframes pl{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--ok) 55%,transparent)}70%,100%{box-shadow:0 0 0 7px transparent}}
+.clk{display:flex;align-items:baseline;gap:8px}.clk+.clk{padding-left:20px;border-left:1px solid var(--ln)}.clk em{font-style:normal;font-weight:700;color:var(--ac);min-width:30px}.clk time{color:var(--tx);font-size:13px;font-weight:600;letter-spacing:.03em}.clk small{font-size:11.5px}
+.bl{font-family:var(--f);color:var(--mu);overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}.bl strong{color:var(--tx);font-weight:600}
+.disc{font-family:var(--f);flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;padding-left:16px;border-left:1px solid var(--ln)}.disc strong{color:var(--wn);font-weight:600}
+@media(max-width:1500px){.tg{display:none}}
+@media(max-width:1100px){.clk small,.live span{display:none}}
+@media(max-width:860px){:root{--sbh:60px}.sbar{flex-wrap:wrap;align-content:center;gap:2px 12px;padding:4px 10px}.live{order:1}.bl{order:2;flex:1 1 0}.clk{order:3}.disc{order:5;flex:1 0 100%;white-space:normal;border-left:0;padding-left:0;font-size:11.5px;line-height:1.35}}
+@media(max-width:600px){.sbar{gap:12px;padding:0 10px}.clk small,.live span{display:none}.clk+.clk{padding-left:12px}}
+@media(prefers-reduced-motion:reduce){.live i{animation:none}}
+@media(max-width:1100px){.wrap{grid-template-columns:minmax(0,1fr);gap:0}.toc{display:none}}
+@media(max-width:860px){.sidebar{transform:translateX(-100%);transition:transform .2s}body.open .sidebar{transform:none}body.open .scrim{display:block;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:55}.shell{margin-left:0}#menu{display:grid}.wrap{padding:0 18px}.top{padding:0 12px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+</style></head><body>
+<a class="skip" href="#content">Lewati ke konten</a><div class="scrim" id="scrim"></div><div class="bar" id="bar"></div>
+<aside class="sidebar" id="sidebar" aria-label="Navigasi dokumentasi"><div class="brand"><span class="mark">A</span><div><strong>Andronikos</strong><span>Weather Intelligence Platform</span></div></div>
+<button class="sbtn" type="button" data-search><span>Cari dokumentasi</span><kbd>Ctrl K</kbd></button><nav class="nav">
+      <div class="nav-group">
+        <div class="nav-group-title">Engine</div>
+        <div class="nav-item"><a href="#engine" class="nav-link">1-Minuten Capability</a></div>
+        <div class="nav-item"><a href="#fusion" class="nav-link">Data Fusion (Anti-Double)</a></div>
+        <div class="nav-item"><a href="#weighting" class="nav-link">Pola Pembobotan</a></div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">API & CLI</div>
+        <div class="nav-item"><a href="#api" class="nav-link">API REST + gRPC</a></div>
+        <div class="nav-item"><a href="#cli" class="nav-link">CLI Commands</a></div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Frontend & UI</div>
+        <div class="nav-item"><a href="#frontend" class="nav-link">Leptos + MapLibre</a></div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Arsitektur</div>
+        <div class="nav-item"><a href="#architecture" class="nav-link">8 Crates</a></div>
+        <div class="nav-item"><a href="#dataflow" class="nav-link">Data Flow</a></div>
+        <div class="nav-item"><a href="#ml" class="nav-link">ML Pipeline</a></div>
+        <div class="nav-item"><a href="#ingest" class="nav-link">Ingestion Adapters</a></div>
+        <div class="nav-item"><a href="#storage" class="nav-link">Storage Backends</a></div>
+        <div class="nav-item"><a href="#grid" class="nav-link">Grid Systems</a></div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Verifikasi & Output</div>
+        <div class="nav-item"><a href="#verify" class="nav-link">Verification Metrics</a></div>
+        <div class="nav-item"><a href="#output" class="nav-link">Output Contract</a></div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Deployment</div>
+        <div class="nav-item"><a href="#compliance" class="nav-link">Legal & Regulatory</a></div>
+        <div class="nav-item"><a href="#deployment" class="nav-link">Three VPS Topology</a></div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Diagrams</div>
+        <div class="nav-item"><a href="#diagrams" class="nav-link">Diagram Arsitektur</a></div>
+      </div>
+    </nav></aside>
+<div class="shell"><header class="top"><button class="ib" id="menu" type="button" aria-label="Buka menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><span class="crumb" id="crumb"></span><span class="sp"></span>
+<button class="ib" type="button" data-search aria-label="Cari"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4-4"/></svg></button><button class="ib" id="theme" type="button" aria-label="Ganti tema terang/gelap"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4v16" /><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg></button></header>
+<div class="wrap"><main class="main" id="content">
+    <div class="header">
+      <h1>Andronikos Weather Intelligence</h1>
+      <p>Fullstack documentation untuk engine weather intelligence Indonesia: GraphCast, Open-Meteo, ERA5, GFS, GEFS, AIGFS, AIGEFS, HGEFS, BMKG, dan multi-source fusion dengan pola pembobotan enterprise.</p>
+      <div class="status-bar">
+        <div class="status-item"><span class="status-dot ok"></span><span class="status-label">Architecture</span><span class="status-value">Prototype Ready</span></div>
+        <div class="status-item"><span class="status-dot ok"></span><span class="status-label">Tests</span><span class="status-value">141 lulus</span></div>
+        <div class="status-item"><span class="status-dot ok"></span><span class="status-label">Clippy</span><span class="status-value">0 warnings</span></div>
+        <div class="status-item"><span class="status-dot warn"></span><span class="status-label">1-Minute</span><span class="status-value">≤10.000 cell</span></div>
+      </div>
+    </div>
+
+    <section class="section" id="engine">
+      <h2>Engine 1-Minuten Capability</h2>
+      <div class="tbl"><table>
+        <thead><tr><th>Operasi</th><th>Waktu</th><th>1 Menit?</th><th>Catatan</th></tr></thead>
+        <tbody>
+          <tr><td><code>predict_point</code> (1 titik)</td><td>10-50 ms</td><td><span class="badge badge-ok">Ya</span></td><td>Single cell batch forward</td></tr>
+          <tr><td><code>predict_grid</code> (≤10.000 cell)</td><td>&lt; 10 ms</td><td><span class="badge badge-ok">Ya</span></td><td>Batch inference dalam satu forward() call</td></tr>
+          <tr><td><code>predict_grid_batch</code> (multi-area)</td><td>&lt; 1 menit</td><td><span class="badge badge-ok">Ya</span></td><td>Banyak area, spatial tiling otomatis</td></tr>
+          <tr><td><code>infer_area_distributed</code> (38,9M cell)</td><td>&lt; 1 menit*</td><td><span class="badge badge-ok">Ya</span></td><td>*Dengan GPU + spatial tiling + multiple concurrent tile requests</td></tr>
+          <tr><td><code>predict_grid</code> 0.5km penuh (38,9M cell)</td><td>&gt; 1 menit</td><td><span class="badge badge-warn">Perlu GPU</span></td><td>Perlu multi-request via tiling</td></tr>
+          <tr><td>ONNX downscale (1 titik)</td><td>&lt; 5 ms</td><td><span class="badge badge-ok">Ya</span></td><td>4 intra-threads, Level3</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Re-arsitektur yang Diimplementasi</h3>
+      <div class="grid">
+        <div class="card">
+          <h4>Batch Inference</h4>
+          <p><code>create_batch_input()</code> membangun tensor [N, features] untuk N cell sekaligus, satu <code>forward()</code> call untuk semua cell. Tidak lagi per-cell sequential.</p>
+        </div>
+        <div class="card">
+          <h4>Mesh Graph</h4>
+          <p><code>build_mesh_edges()</code> membangun edge_index [2, E] dengan 4-connectivity untuk GNN message passing.</p>
+        </div>
+        <div class="card">
+          <h4>Spatial Tiling</h4>
+          <p><code>TilingManager::split_area_into_tiles()</code> bagi area besar menjadi tile (default 2,5M cell/tile) dengan overlap untuk konsistensi GNN di batas tile.</p>
+        </div>
+        <div class="card">
+          <h4>Multi-Area Coordinator</h4>
+          <p><code>TileCoordinator::infer_area_distributed()</code> otomatis split ke tiles, process secara concurrent via <code>futures::future::join_all</code>.</p>
+        </div>
+        <div class="card">
+          <h4>Device Selection</h4>
+          <p><code>DeviceType</code> (CPU/CUDA/WGPU/Metal) via <code>create_burn_device()</code>.</p>
+        </div>
+        <div class="card">
+          <h4>Lead Time Cap</h4>
+          <p><code>MAX_LEAD_SECONDS = 168 * 3600</code> enforced di semua entry point.</p>
+        </div>
+        <div class="card">
+          <h4>No unwrap/panic/race</h4>
+          <p>Semua operasi via <code>Result</code>, tidak ada <code>unwrap()</code>/<code>expect()</code>/<code>panic!</code> di non-test code.</p>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-block-header"><span>Rust</span><span>📋 Copy</span></div>
+        <div class="code-block-content">
+          <pre><code>// predict_grid_batch untuk banyak area
+let areas = vec![
+    AreaPredictRequest {
+        area_id: "jakarta".to_string(),
+        bbox: Bbox::new(106.5, -6.5, 107.0, -6.0),
+        resolution: 0, // 0.5km
+        lead_seconds: 3600,
+        variables: WeatherVariable::surface_variables(),
+        max_cells: Some(5000),
+    },
+];
+
+let request = BatchGridPredictRequest::new(areas)
+    .with_device(DeviceType::Cpu)
+    .with_max_total_cells(10_000);
+
+let output = forecaster.predict_grid_batch(request).await?;
+          </code></pre>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-block-header"><span>Rust</span><span>📋 Copy</span></div>
+        <div class="code-block-content">
+          <pre><code>// Distributed Inference untuk Area Besar (38.9M cell)
+let result = coordinator.infer_area_distributed(
+    "indonesia_full",
+    &Bbox::new(95.0, -11.0, 141.1, 6.1),
+    0,
+    3600,
+    &WeatherVariable::surface_variables(),
+).await?;
+// result.total_cells = 38.900.000
+// result.total_inference_ms &lt; 60.000 (dengan GPU + tiling)
+// result.completed_within_target = true
+          </code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="fusion">
+      <h2>Data Fusion (Anti-Double Counting)</h2>
+      <p><code>SourceRegistry</code> mencegah double-counting saat runtime:</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Sumber</th><th>Role</th><th>Dependency Group</th><th>Eligible?</th><th>Alasan</th></tr></thead>
+        <tbody>
+          <tr><td><code>met.gfs</code></td><td>BasePhysics</td><td>Independent</td><td><span class="badge badge-ok"></span></td><td>Dasar fisika deterministik</td></tr>
+          <tr><td><code>met.gefs</code></td><td>BaseEnsemble</td><td>NoaaGefsFamily</td><td><span class="badge badge-ok"></span></td><td>Dasar ensemble probabilistik</td></tr>
+          <tr><td><code>met.aigfs</code></td><td>AiMember</td><td>NoaaGefsFamily</td><td><span class="badge badge-ok"></span></td><td>Anggota AI tambahan</td></tr>
+          <tr><td><code>met.aigefs</code></td><td>AiMember</td><td>NoaaGefsFamily</td><td><span class="badge badge-ok"></span></td><td>Anggota ensemble AI</td></tr>
+          <tr><td><code>met.hgefs</code></td><td>Excluded</td><td>NoaaGefsFamily</td><td><span class="badge badge-no"></span></td><td>Gabungan AIGEFS+GEFSv12, tidak independen</td></tr>
+          <tr><td><code>met.bmkg_fc</code></td><td>LocalMember</td><td>Independent</td><td><span class="badge badge-ok"></span></td><td>Anggota gabungan lokal</td></tr>
+          <tr><td><code>met.graphcast</code></td><td>Excluded</td><td>GraphCastNonCommercial</td><td><span class="badge badge-no"></span></td><td>CC BY-NC-SA, tidak komersial</td></tr>
+          <tr><td><code>met.openmeteo</code></td><td>ComparatorOnly</td><td>OpenMeteoAggregator</td><td><span class="badge badge-no"></span></td><td>Agregasi, tidak independen</td></tr>
+          <tr><td><code>ref.era5</code></td><td>TrainingOnly</td><td>Era5Reanalysis</td><td><span class="badge badge-no"></span></td><td>Training + bias correction only</td></tr>
+          <tr><td><code>fire.firms</code></td><td>ModuleSpecific</td><td>FireHotspotFamily</td><td><span class="badge badge-ok"></span></td><td>Titik panas</td></tr>
+          <tr><td><code>fire.sipongi</code></td><td>ModuleSpecific</td><td>FireHotspotFamily</td><td><span class="badge badge-ok"></span></td><td>Sensor sama dengan FIRMS, hitung sekali</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="alert alert-info">
+        <strong>Atur Aturan Double-Counting:</strong>
+        <ul style="margin-left: 1.25rem; margin-top: 0.5rem;">
+          <li><code>met.hgefs</code> tidak dapat bobot terpisah dari <code>met.gefs</code>+<code>met.aigefs</code> (dependensi NoaaGefsFamily)</li>
+          <li><code>met.openmeteo</code> = bobot 0 dalam fusion (hanya pembanding)</li>
+          <li><code>ref.era5</code> = bobot 0 real-time (training only)</li>
+          <li><code>fire.firms</code> + <code>fire.sipongi</code> = satu sensor, hitung sekali</li>
+          <li><code>can_have_separate_weight()</code> mencegah dua sumber dalam group yang sama sama-sama menerima bobot non-nol</li>
+        </ul>
+      </div>
+
+      <h3>Alur Penggabungan (5 Langkah)</h3>
+      <ol>
+        <li><strong>Ingest mentah</strong> dengan metadata: sumber, lisensi, waktu terbit, waktu berlaku.</li>
+        <li><strong>Selaraskan</strong> grid, satuan, zona waktu (UTC), nama variabel.</li>
+        <li><strong>Saring pengamatan</strong> (QC): rentang nilai, konsistensi antar stasiun, data ganda.</li>
+        <li><strong>Gabungkan</strong>: fisika (GFS/GEFS) sebagai dasar, AI (AIGFS/AIGEFS/BMKG_fc) sebagai anggota tambahan. Bobot dipelajari dari data historis.</li>
+        <li><strong>Verifikasi terhadap pengamatan</strong>, bukan ERA5.</li>
+      </ol>
+    </section>
+
+    <section class="section" id="weighting">
+      <h2>Pola Pembobotan (Weighting Pattern)</h2>
+
+      <h3>A. Bias Correction (Additive)</h3>
+      <div class="code-block">
+        <div class="code-block-content">
+          <pre><code>x_koreksi = x_prakiraan - b
+b_baru = (1 - α) * b_lama + α * (prakiraan - pengamatan)</code></pre>
+        </div>
+      </div>
+      <ul>
+        <li><code>α</code> dan panjang jendela <strong>BELUM DIPUTUSKAN</strong> → <code>WIError::BelumDiputuskan</code></li>
+        <li>Variabel aditif: suhu 2m, tekanan permukaan laut, angin (u,v), kelembapan (clamp 0-100%)</li>
+        <li>Hujan: BUKAN aditif — pakai rasio, clamp ≥ 0</li>
+        <li>Semua anggota ensemble pakai <code>b</code> yang sama</li>
+        <li>Acuan: <code>obs.bmkg_stn</code>, <code>obs.isd</code> (setelah QC), BUKAN <code>ref.era5</code></li>
+      </ul>
+
+      <h3>B. Ensemble Probability</h3>
+      <div class="code-block">
+        <div class="code-block-content">
+          <pre><code>p = (1/M) * Σ(1[x_m &gt; T])</code></pre>
+        </div>
+      </div>
+      <ul>
+        <li>Hazard function dijalankan pada SETIAP anggota ensemble, baru proporsi dihitung</li>
+        <li><code>M</code> kecil → probabilitas kasar (0 atau 1)</li>
+      </ul>
+
+      <h3>C. Fusion Weight (constraint: Σw = 1, w ≥ 0)</h3>
+      <div class="code-block">
+        <div class="code-block-content">
+          <pre><code>Fusion = w_physics * Base(GFS, GEFS)
+       + w_ai * Σ(w_member_i * Member_i)   [AIGFS, AIGEFS, BMKG_fc]
+       + BiasCorrection(...)
+       → Calibrated Probability via Ensemble CDF</code></pre>
+        </div>
+      </div>
+      <ul>
+        <li><code>Σ w = 1</code>, <code>w ≥ 0</code>, divalidasi oleh <code>FusionEngine::validate_weights()</code></li>
+        <li>Nilai konkret bobot <strong>belum ditetapkan</strong> — harus diturunkan dari verifikasi historis</li>
+        <li>Fisika (GFS, GEFS) = baseline weight tinggi</li>
+        <li>AI members (AIGFS, AIGEFS) = weight tambahan, bukan pengganti fisika</li>
+      </ul>
+    </section>
+
+    <section class="section" id="api">
+      <h2>API REST + gRPC</h2>
+      <div class="tbl"><table>
+        <thead><tr><th>Endpoint</th><th>Method</th><th>Deskripsi</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><code class="code-inline">GET /health</code></td><td><span style="color:var(--accent-hover)">GET</span></td><td>Health check</td><td><span class="badge badge-ok">Working</span></td></tr>
+          <tr><td><code class="code-inline">POST /v1/predict</code></td><td><span style="color:#f472b6">POST</span></td><td>Prediksi titik tunggal → FusionOutput</td><td><span class="badge badge-ok">Working</span></td></tr>
+          <tr><td><code class="code-inline">POST /v1/predict/grid</code></td><td><span style="color:#f472b6">POST</span></td><td>Prediksi grid tunggal</td><td><span class="badge badge-ok">Working</span></td></tr>
+          <tr><td><code class="code-inline">POST /v1/predict/grid/batch</code></td><td><span style="color:#f472b6">POST</span></td><td>Prediksi grid batch multi-area</td><td><span class="badge badge-ok">Working</span></td></tr>
+          <tr><td><code class="code-inline">POST /v1/predict/grid/distributed</code></td><td><span style="color:#f472b6">POST</span></td><td>Prediksi distributed 38.9M cell</td><td><span class="badge badge-ok">Working</span></td></tr>
+          <tr><td><code class="code-inline">GET /v1/model/info</code></td><td><span style="color:var(--accent-hover)">GET</span></td><td>Model metadata</td><td><span class="badge badge-ok">Working</span></td></tr>
+          <tr><td><code class="code-inline">GET /v1/variables</code></td><td><span style="color:var(--accent-hover)">GET</span></td><td>List 17 WeatherVariable</td><td><span class="badge badge-ok">Working</span></td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>gRPC Services</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Service</th><th>Type</th><th>Deskripsi</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Predict</td><td><span style="color:#f472b6">Unary</span></td><td>Prediksi titik tunggal</td><td><span class="badge badge-ok">Working</span></td></tr>
+          <tr><td>PredictGrid</td><td><span style="color:#f472b6">Unary</span></td><td>Prediksi grid tunggal</td><td><span class="badge badge-ok">Working</span></td></tr>
+          <tr><td>StreamPredict</td><td><span style="color:var(--accent-hover)">Server Streaming</span></td><td>Stream prediksi multi-lead</td><td><span class="badge badge-ok">Working</span></td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Request/Response Schema</h3>
+      <div class="code-block">
+        <div class="code-block-content">
+          <pre><code>// POST /v1/predict Request
+{
+  "latitude": -6.595,
+  "longitude": 106.806,
+  "lead_seconds": 3600,
+  "variables": ["Temperature", "RelativeHumidity", "Precipitation"]
+}
+
+// POST /v1/predict Response (FusionOutput)
+{
+  "unit_id": null,
+  "jenis_unit": null,
+  "modul": "cuaca",
+  "terbit": "2026-10-17T00:00:00Z",
+  "berlaku_dari": "2026-10-17T01:00:00Z",
+  "berlaku_sampai": "2026-10-17T02:00:00Z",
+  "lead_seconds": 3600,
+  "probabilitas": null,
+  "tingkat_siaga": null,
+  "anggota": 1,
+  "versi_model": "GraphCast-1.0.0",
+  "koreksi_bias": false,
+  "sumber_id": ["met.graphcast"],
+  "atribusi": ["DeepMind GraphCast (lokal, dilatih sendiri)"],
+  "label_istilah": "analisis pendukung",
+  "klaim": [],
+  "variables": {
+    "Temperature": { "weighted_mean": 298.15, "exceedance_probability": null, "member_count": 1, "bias_applied": false }
+  }
+          </code></pre>
+        </div>
+      </div>
+
+      <h3>Middleware</h3>
+      <ul>
+        <li><strong>JWT RS256 Authentication</strong> - scope-based authorization</li>
+        <li><strong>Rate Limiting</strong> - sliding window, Redis-backed</li>
+        <li><strong>CORS</strong> - configurable origins</li>
+        <li><strong>Request Validation</strong> - lat/lon bounds, lead time max (168h), variable names</li>
+        <li><strong>Redis Cache</strong> - TTL (1hr point, 30min grid), pattern invalidation</li>
+        <li><strong>Tracing</strong> - structured JSON with cell, model_run, latency</li>
+      </ul>
+    </section>
+
+    <section class="section" id="cli">
+      <h2>CLI Commands</h2>
+      <div class="tbl"><table>
+        <thead><tr><th>Command</th><th>Deskripsi</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><code class="code-inline">wi sync --hours 24</code></td><td>Real data sync dengan ParquetSyncEngine</td><td><span class="badge badge-ok"></span></td></tr>
+          <tr><td><code class="code-inline">wi train</code></td><td>GraphCast model initialization + Python training pipeline</td><td><span class="badge badge-ok"></span></td></tr>
+          <tr><td><code class="code-inline">wi predict --latitude -6.595 --longitude 106.806 --lead-seconds 3600</code></td><td>Real inference dengan GraphCastForecaster</td><td><span class="badge badge-ok"></span></td></tr>
+          <tr><td><code class="code-inline">wi serve --host 0.0.0.0 --port 8080</code></td><td>API server dengan axum, rate limiting, CORS</td><td><span class="badge badge-ok"></span></td></tr>
+          <tr><td><code class="code-inline">wi verify --model model.bin --data test.parquet</code></td><td>Dashboard generation + Python verification pipeline</td><td><span class="badge badge-ok"></span></td></tr>
+          <tr><td><code class="code-inline">wi export --model model.bin --format onnx --output model.onnx</code></td><td>Export guidance ONNX, TorchScript, TensorRT</td><td><span class="badge badge-ok"></span></td></tr>
+          <tr><td><code class="code-inline">wi info</code></td><td>Model architecture info</td><td><span class="badge badge-ok"></span></td></tr>
+          <tr><td><code class="code-inline">wi ingest</code></td><td>Source registry listing</td><td><span class="badge badge-ok"></span></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="section" id="frontend">
+      <h2>Frontend UI (Leptos + MapLibre)</h2>
+      <p>Frontend dibuat di folder <code>andronikos/</code>:</p>
+      <div class="grid">
+        <div class="card">
+          <h4>MapLibre GL JS</h4>
+          <p>Bounds dibatasi ke wilayah Indonesia: lat -11.15° to 6.25°, lon 94.95° to 141.25°. <code>maxBounds</code> mencegah panning keluar. <code>maxZoom 10</code>, <code>minZoom 4</code>.</p>
+        </div>
+        <div class="card">
+          <h4>Panel Kiri</h4>
+          <p>Prakiraan cuaca (suhu, kelembapan, curah hujan, angin, tekanan) + Risiko Dampak (longsor/banjir/asap dengan tingkat siaga + probabilitas).</p>
+        </div>
+        <div class="card">
+          <h4>Badge Atribusi</h4>
+          <p>BMKG (terverifikasi), NOAA (terverifikasi), ERA5 (training only), Open-Meteo (dikecualikan dari fusion).</p>
+        </div>
+        <div class="card">
+          <h4>Istilah Baku</h4>
+          <p>"Informasi risiko" / "analisis pendukung", <strong>bukan</strong> "peringatan resmi" (compliance gate UU 31/2009).</p>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-block-content">
+          <pre><code>cargo install trunk
+cd andronikos/leptos
+trunk serve
+# Buka http://127.0.0.1:8080</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="architecture">
+      <h2>Arsitektur Lengkap (8 Crates)</h2>
+      <div class="tbl"><table>
+        <thead><tr><th>Crate</th><th>Deskripsi</th><th>Status</th><th>Key Tech</th></tr></thead>
+        <tbody>
+          <tr><td><code>wi-core</code></td><td>Types, errors, units, config, DeviceType, SourceRegistry</td><td><span class="badge badge-ok">95%</span></td><td>thiserror, serde, chrono</td></tr>
+          <tr><td><code>wi-grid</code></td><td>Geospatial (H3 + FixedGrid 0.5km)</td><td><span class="badge badge-ok">95%</span></td><td>h3o, geo</td></tr>
+          <tr><td><code>wi-ingest</code></td><td>Data ingestion (7 adapters + bias_correction)</td><td><span class="badge badge-ok">85%</span></td><td>reqwest, quick-xml, parquet</td></tr>
+          <tr><td><code>wi-storage</code></td><td>Storage (Parquet, PostgreSQL/PostGIS, Redis, .atd)</td><td><span class="badge badge-ok">80%</span></td><td>sqlx, redis, arrow</td></tr>
+          <tr><td><code>wi-model</code></td><td>ML Inference — DUAL PATH (Burn GraphCast + ONNX + Tiling)</td><td><span class="badge badge-ok">65%</span></td><td>burn 0.22, ort, rayon</td></tr>
+          <tr><td><code>wi-verify</code></td><td>Verification metrics (MAE, RMSE, Brier, CRPS)</td><td><span class="badge badge-ok">95%</span></td><td>statrs, ndarray</td></tr>
+          <tr><td><code>wi-api</code></td><td>REST + gRPC (axum + tonic), Redis cache, JWT auth</td><td><span class="badge badge-ok">75%</span></td><td>axum, tonic, tower-http</td></tr>
+          <tr><td><code>wi-cli</code></td><td>CLI commands (sync, train, predict, serve, verify, export, info)</td><td><span class="badge badge-ok">80%</span></td><td>clap, tokio</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="section" id="dataflow">
+      <h2>Data Flow Architecture</h2>
+      <div class="code-block">
+        <div class="code-block-content">
+          <pre><code>SOURCES (7 APIs)
+    → wi-ingest (SyncEngine + validation + gap fill)
+    → wi-storage (Parquet + PostgreSQL + Redis + .atd)
+    → wi-model (Burn GraphCast global + ONNX downscaler + Tiling Coordinator)
+    → wi-verify (metrics + baselines)
+    → wi-api (REST + gRPC + Redis cache)
+           │
+           ▼
+    CONSUMERS: wi-cli, wi-ui (Leptos+Deck.gl), CoalForge (REST+Kafka), External APIs</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="ml">
+      <h2>ML Pipeline — Dual Path</h2>
+      <div class="grid">
+        <div class="card">
+          <h4>Path 1: Global Model (Burn GraphCast)</h4>
+          <p>12 GNN layers, 8 heads, hidden_dim=256, ~40-60M params. SwiGLU MLP, O(N) Linear Attention (Performer). 17 output heads.</p>
+        </div>
+        <div class="card">
+          <h4>Path 2: Regional Downscaler (ONNX)</h4>
+          <p>Input 14 features → Output 6 vars × 4 quantiles = 24 outputs. ort crate Level3, 4 intra-threads.</p>
+        </div>
+        <div class="card">
+          <h4>Training</h4>
+          <p><strong>Python melatih, Rust menyajikan</strong>. PyTorch/Lightning → ONNX/Burn → serve in Rust.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="ingest">
+      <h2>Ingestion Adapters (7 Sources)</h2>
+      <div class="tbl"><table>
+        <thead><tr><th>Adapter</th><th>Status</th><th>Rate Limit</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Open-Meteo</td><td><span class="badge badge-ok">Complete</span></td><td>10 req/s</td><td>Arsip + Forecast</td></tr>
+          <tr><td>NOAA (ISD/GHCN)</td><td><span class="badge badge-ok">Complete</span></td><td>5 req/s</td><td>Token bucket</td></tr>
+          <tr><td>BMKG</td><td><span class="badge badge-ok">Complete</span></td><td>60 req/min</td><td>UU 31/2009 attribution</td></tr>
+          <tr><td>ERA5</td><td><span class="badge badge-ok">Complete</span></td><td>1 req/s</td><td>CDS API, NetCDF</td></tr>
+          <tr><td>GFS</td><td><span class="badge badge-ok">Complete</span></td><td>120 req/min</td><td>NOMADS, GRIB2</td></tr>
+          <tr><td>Himawari</td><td><span class="badge badge-ok">Complete</span></td><td>30 req/min</td><td>JAXA/AWS, NetCDF</td></tr>
+          <tr><td>WeatherNext</td><td><span class="badge badge-ok">Complete</span></td><td>10 req/min</td><td>DeepMind allowlist</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="section" id="storage">
+      <h2>Storage Backends (4)</h2>
+      <div class="tbl"><table>
+        <thead><tr><th>Backend</th><th>Status</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Parquet</td><td><span class="badge badge-ok">Complete + Wired</span></td><td>Hive partitioning, ZSTD</td></tr>
+          <tr><td>PostgreSQL/PostGIS</td><td><span class="badge badge-ok">Complete</span></td><td>Full schema, spatial queries</td></tr>
+          <tr><td>ATD (custom binary)</td><td><span class="badge badge-warn">Skeleton</span></td><td>bincode+zstd</td></tr>
+          <tr><td>Redis</td><td><span class="badge badge-warn">Skeleton</span></td><td>moka + redis, TTL</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="section" id="verify">
+      <h2>Verification Metrics</h2>
+      <div class="tbl"><table>
+        <thead><tr><th>Category</th><th>Metrics</th><th>Baseline</th></tr></thead>
+        <tbody>
+          <tr><td>Deterministic</td><td>MAE, RMSE, Bias, Correlation</td><td>Persistence, Climatology, Raw Model</td></tr>
+          <tr><td>Probabilistic</td><td>Brier Score, Reliability Diagram, ROC AUC</td><td>—</td></tr>
+          <tr><td>Ensemble</td><td>CRPS (fair), Spread, Spread-Skill Ratio</td><td>—</td></tr>
+          <tr><td>Splits</td><td>Temporal, Spatial, Cross-Validation</td><td>—</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="section" id="grid">
+      <h2>Grid Systems</h2>
+      <div class="tbl"><table>
+        <thead><tr><th>Grid Type</th><th>Resolution</th><th>Cells (Indonesia)</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>H3 res 7</td><td>1.22 km / 5.16 km²</td><td>~7,500</td><td><span class="badge badge-ok"></span></td></tr>
+          <tr><td>H3 res 8</td><td>454 m / 0.74 km²</td><td>~52,000</td><td><span class="badge badge-ok"></span></td></tr>
+          <tr><td>FixedGrid 0.0045°</td><td>500 m / 0.25 km²</td><td>38.9M</td><td><span class="badge badge-ok">VERIFIED</span></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="section" id="output">
+      <h2>Output Contract (16 Field Wajib)</h2>
+      <div class="tbl"><table>
+        <thead><tr><th>Bidang</th><th>Isi</th></tr></thead>
+        <tbody>
+          <tr><td><code>unit_id</code>, <code>jenis_unit</code></td><td>Sub-DAS, unit lereng, atau kelurahan</td></tr>
+          <tr><td><code>modul</code></td><td>longsor, banjir, atau asap</td></tr>
+          <tr><td><code>terbit</code>, <code>berlaku_dari</code>, <code>berlaku_sampai</code></td><td>Waktu UTC</td></tr>
+          <tr><td><code>lead</code></td><td>Jangka waktu prakiraan</td></tr>
+          <tr><td><code>probabilitas</code></td><td>Proporsi anggota ensemble yang melewati ambang</td></tr>
+          <tr><td><code>tingkat_siaga</code></td><td>Hasil gabungan ambang hujan dan kelas kerentanan</td></tr>
+          <tr><td><code>anggota</code></td><td>Jumlah anggota ensemble</td></tr>
+          <tr><td><code>versi_model</code></td><td>Versi model per sumber</td></tr>
+          <tr><td><code>koreksi_bias</code></td><td>Apakah koreksi dipakai atau dikembalikan ke mentah</td></tr>
+          <tr><td><code>sumber_id</code></td><td>Daftar ID dari katalog variabel</td></tr>
+          <tr><td><code>atribusi</code></td><td>Teks atribusi yang wajib</td></tr>
+          <tr><td><code>label_istilah</code></td><td>"Informasi risiko" atau "analisis pendukung"</td></tr>
+          <tr><td><code>klaim</code></td><td>Daftar kode pembeda (D1-D4) yang lulus verifikasi</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="section" id="compliance">
+      <h2>Compliance (Wajib)</h2>
+      <ul>
+        <li><strong>UU 31/2009 Pasal 36 ayat 1 + PP 11/2016 Pasal 4:</strong> Info meteorologi hanya oleh BMKG, kecuali UU lain.</li>
+        <li><strong>Istilah:</strong> "informasi risiko" atau "analisis pendukung", <strong>bukan</strong> "peringatan dini" sebelum izin BMKG.</li>
+        <li><strong>Atribusi:</strong> BMKG wajib, FIRMS acknowledgment, Copernicus/Open-Meteo atribusi, NOAA tidak boleh disiratkan didukung NOAA.</li>
+        <li><strong>Open-Meteo:</strong> gratis hanya non-komersial, <10.000 panggilan/hari.</li>
+        <li><strong>BMKG:</strong> 60 req/min/IP, izin tertulis untuk komersial.</li>
+        <li><strong>NOMADS:</strong> ~120 hit/min/user, pusatkan unduhan pada satu node dengan rate limiter.</li>
+        <li><strong>GraphCast/GenCast bobot:</strong> CC BY-NC-SA 4.0 → dikecualikan untuk produk komersial.</li>
+      </ul>
+
+      <h3>Gerbang Sebelum Penyajian</h3>
+      <ol>
+        <li>Istilah keluaran sesuai dan tidak menyebut "peringatan dini" tanpa izin.</li>
+        <li>Atribusi lengkap: BMKG wajib, FIRMS acknowledgment, Copernicus/Open-Meteo atribusi.</li>
+        <li>Tidak ada sumber berstatus belum dan tidak ada sumber tidak independen yang terhitung dua kali.</li>
+        <li>Bahasa probabilitas dan tingkat risiko, tanpa klaim "memprediksi pasti".</li>
+        <li>Skor verifikasi pilot sudah melewati ambang kelulusan.</li>
+      </ol>
+
+      <h3>Undecided (JANGAN diisi tebakan)</h3>
+      <ul>
+        <li><code>α</code> dan panjang jendela koreksi bias → <code>BelumDiputuskan</code> error</li>
+        <li>Ambang tingkat siaga (longsor/banjir/asap)</li>
+        <li>Model sebaran asap</li>
+        <li>Indeks kekeringan</li>
+        <li>Sumber sungai, tanah, tutupan lahan, drainase, dll.</li>
+        <li>BMKG PNBP tariff, PVMBG download rights, GPM/GSMaP licenses</li>
+        <li>Commercial product decision</li>
+      </ul>
+    </section>
+
+    <section class="section" id="deployment">
+      <h2>Arsitektur Deployment — Three VPS Topology</h2>
+      <p>Engine didesain untuk berjalan dalam <strong>tiga VPS terpisah</strong> untuk memisahkan tanggung jawab ingestion, inference, dan API. Untuk development/prototype, semua dapat dijalankan dalam satu VPS.</p>
+
+      <div class="grid">
+        <div class="card">
+          <h4>VPS-1: Data Pipeline</h4>
+          <p><strong>Tugas:</strong> Ingest, validasi, penyimpanan, koreksi bias</p>
+          <ul style="margin-left: 1rem; margin-top: 0.5rem; color: var(--text-muted); font-size: 0.85rem;">
+            <li>wi-ingest (7 adapters)</li>
+            <li>wi-storage (Parquet, PostGIS, Redis)</li>
+            <li>BiasCorrectionEngine</li>
+            <li>Checkpoint sync (SHA256)</li>
+          </ul>
+          <div class="progress"><div class="progress-bar" style="width: 85%"></div></div>
+        </div>
+        <div class="card">
+          <h4>VPS-2: ML Engine (GPU)</h4>
+          <p><strong>Tugas:</strong> Inferensi GraphCast, tiling, distributed</p>
+          <ul style="margin-left: 1rem; margin-top: 0.5rem; color: var(--text-muted); font-size: 0.85rem;">
+            <li>wi-model (Burn, ONNX)</li>
+            <li>TilingManager + TileCoordinator</li>
+            <li>CUDA/WGPU device</li>
+            <li>38.9M cell inference</li>
+          </ul>
+          <div class="progress"><div class="progress-bar" style="width: 65%"></div></div>
+        </div>
+        <div class="card">
+          <h4>VPS-3: API + Frontend</h4>
+          <p><strong>Tugas:</strong> API gateway, UI, CoalForge integration</p>
+          <ul style="margin-left: 1rem; margin-top: 0.5rem; color: var(--text-muted); font-size: 0.85rem;">
+            <li>wi-api (REST + gRPC)</li>
+            <li>JWT auth, rate limiting</li>
+            <li>Leptos + MapLibre UI</li>
+            <li>CoalForge decision endpoints</li>
+          </ul>
+          <div class="progress"><div class="progress-bar" style="width: 75%"></div></div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-block-content">
+          <pre><code>VPS-1 (Data Pipeline) ──┬──────────────┐
+                        │              ▼
+                        └──► [Kafka/Avro Events] ──► VPS-2 (ML Engine GPU) ──► [Kafka] ──► VPS-3 (API + UI)
+                                                   │                     │                    │
+                                                   ▼                    ▼                    ▼
+                                              [GraphCast Burn]  [ONNX Downscaler]    [REST + gRPC + Leptos UI]
+                                                   │                     │                    │
+                                                   ▼                    ▼                    ▼
+                                              [Parquet Storage]   [Redis Cache]     [CoalForge Events]
+          </code></pre>
+        </div>
+      </div>
+
+      <h3>Single VPS vs Distributed (Three VPS)</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Aspek</th><th>Single VPS (Development)</th><th>Three VPS (Production)</th></tr></thead>
+        <tbody>
+          <tr><td>Ingestion</td><td>Lokal, satu proses</td><td>VPS-1 dedicated, 7 adapters parallel</td></tr>
+          <tr><td>Model Inference</td><td>CPU only, batch kecil</td><td>VPS-2 GPU (CUDA/WGPU), tiling 38.9M cell</td></tr>
+          <tr><td>API Layer</td><td>Lokal, axum + tonic</td><td>VPS-3 dedicated, JWT + rate limit</td></tr>
+          <tr><td>Storage</td><td>Lokal disk</td><td>VPS-1 Parquet + PostgreSQL/PostGIS</td></tr>
+          <tr><td>Komunikasi</td><td>In-memory function call</td><td>Kafka/Avro event streaming</td></tr>
+          <tr><td>Frontend</td><td>Trunk serve lokal</td><td>VPS-3, built static + API proxy</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="alert alert-info">
+        <strong>Perintah jalan per VPS:</strong>
+        <div class="code-block">
+          <div class="code-block-content">
+            <pre><code># VPS-1: Data Pipeline (Ingestion + Storage)
+cargo run --bin wi -- sync --hours 24
+cargo run --bin wi -- ingest
+
+# VPS-2: ML Engine (dengan GPU support)
+cargo run --bin wi-serve --features cuda -- --port 8081
+
+# VPS-3: API + Frontend
+cargo run --bin wi-serve -- --port 8080
+# Frontend: trunk serve --public-url https://api.andronikos.id</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-warning">
+        <strong>Catatan:</strong> Untuk 38.9M cell Indonesia 0.5km dalam 1 menit, VPS-2 membutuhkan GPU (CUDA/WGPU) dengan spatial tiling otomatis. Single VPS CPU hanya cocok untuk development dengan area pilot kecil (≤10.000 cell).
+      </div>
+    </section>
+
+    <section class="section" id="diagrams">
+<h2>Diagram Arsitektur</h2>
+<p>Semua diagram ditulis sebagai teks monospace, jadi tampil identik di setiap browser dan bisa disalin ke dokumen lain.</p>
+<div class="diagram-container"><div class="diagram-title">Data Flow Architecture</div><div class="dgw"><pre class="ascii" role="img" aria-label="Alur data dari sumber, ingest, storage, model, verifikasi, API, hingga konsumen">╔═════════════════════════════════╗
+║             SOURCES             ║
+║             7 APIs              ║
+╚═════════════════════════════════╝
+                 │
+                 ▼
+┌─────────────────────────────────┐
+│            wi-ingest            │
+│         SyncEngine + QC         │
+└─────────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────┐
+│           wi-storage            │
+│     Parquet, PostGIS, Redis     │
+└─────────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────┐
+│            wi-model             │
+│      Burn GraphCast + ONNX      │
+└─────────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────┐
+│            wi-verify            │
+│       Metrics + Baselines       │
+└─────────────────────────────────┘
+                 │
+                 ▼
+╔═════════════════════════════════╗
+║             wi-api              ║
+║           REST + gRPC           ║
+╚═════════════════════════════════╝
+                 │
+                 ▼
+╔═════════════════════════════════╗
+║            CONSUMERS            ║
+║       CLI, UI, CoalForge        ║
+╚═════════════════════════════════╝</pre></div></div>
+<div class="diagram-container"><div class="diagram-title">ML Pipeline — Dual Path</div><div class="dgw"><pre class="ascii" role="img" aria-label="Dua jalur ML: model global GraphCast dan regional downscaler ONNX">                                ┌─────────────────────────┐
+                                │         Sources         │
+                                │    (GFS, GEFS, ERA5)    │
+                                └─────────────────────────┘
+                                             │
+                     ┌───────────────────────┴───────────────────────┐
+                     ▼                                               ▼
+┌─ PATH 1: Global Model (Burn GraphCast) ─┐     ┌─ PATH 2: Regional Downscaler (ONNX) ────┐
+│                                         │     │                                         │
+│    ┌───────────────────────────────┐    │     │    ┌───────────────────────────────┐    │
+│    │            Encoder            │    │     │    │       Coarse Forecast +       │    │
+│    │     surface + atmosphere      │    │     │    │        DEM + Land Mask        │    │
+│    └───────────────────────────────┘    │     │    └───────────────────────────────┘    │
+│                    │                    │     │                    │                    │
+│                    ▼                    │     │                    ▼                    │
+│    ┌───────────────────────────────┐    │     │    ┌───────────────────────────────┐    │
+│    │        12x GNN Layers         │    │     │    │            Feature            │    │
+│    │        message passing        │    │     │    │          Engineering          │    │
+│    └───────────────────────────────┘    │     │    └───────────────────────────────┘    │
+│                    │                    │     │                    │                    │
+│                    ▼                    │     │                    ▼                    │
+│    ┌───────────────────────────────┐    │     │    ┌───────────────────────────────┐    │
+│    │     3x Temporal Attention     │    │     │    │         ONNX Runtime          │    │
+│    │           Performer           │    │     │    │       Level3, 4 threads       │    │
+│    └───────────────────────────────┘    │     │    └───────────────────────────────┘    │
+│                    │                    │     │                    │                    │
+│                    ▼                    │     │                    ▼                    │
+│    ┌───────────────────────────────┐    │     │    ╔═══════════════════════════════╗    │
+│    │      Multi-Task Decoder       │    │     │    ║     6 vars x 4 quantiles      ║    │
+│    │           17 heads            │    │     │    ║           + P(rain)           ║    │
+│    └───────────────────────────────┘    │     │    ╚═══════════════════════════════╝    │
+│                                         │     │                                         │
+└─────────────────────────────────────────┘     └─────────────────────────────────────────┘</pre></div></div>
+<div class="diagram-container"><div class="diagram-title">Three VPS Deployment Topology</div><div class="dgw"><pre class="ascii" role="img" aria-label="Topologi tiga VPS: data pipeline, ML engine, API dan frontend">┌─ VPS-1: Data Pipeline (Ingestion + Storage) ──────────────────────────────┐
+│                                                                           │
+│  ┌────────────┐     ┌───────────┐     ┌─────────────────────────┐         │
+│  │ 7 Adapters │────►│ wi-ingest │────►│       wi-storage        │         │
+│  └────────────┘     └───────────┘     │ Parquet, PostGIS, Redis │         │
+│                                       └─────────────────────────┘         │
+│                                                    ┆                      │
+│                                                    ▲                      │
+│                                           ┌─────────────────┐             │
+│                                           │ BiasCorrection  │             │
+│                                           └─────────────────┘             │
+│                                                                           │
+└───────────────────────────────────────────────────────────────────────────┘
+                                      │ Kafka/Avro
+                                      ▼
+┌─ VPS-2: ML Engine (GPU, CUDA/WGPU) ───────────────────────────────────────┐
+│                                                                           │
+│  ┌────────────────┐     ┌─────────────────┐                               │
+│  │ Burn GraphCast │────►│ ONNX Downscaler │                               │
+│  └────────────────┘     └─────────────────┘                               │
+│                                                                           │
+│  ┌────────────────┐     ┌─────────────────┐                               │
+│  │ TilingManager  │────►│ TileCoordinator │                               │
+│  └────────────────┘     └─────────────────┘                               │
+│                                                                           │
+└───────────────────────────────────────────────────────────────────────────┘
+                                      │ Kafka/Avro
+                                      ▼
+┌─ VPS-3: API + Frontend ───────────────────────────────────────────────────┐
+│                                                                           │
+│  ┌─────────────┐     ┌──────────────────┐                                 │
+│  │   wi-api    │────►│ JWT + Rate Limit │                                 │
+│  │ REST + gRPC │     └──────────────────┘                                 │
+│  └─────────────┘               │                                          │
+│                                │                                          │
+│            ┌───────────────────┘                                          │
+│            ▼                                                              │
+│  ┌───────────────────┐     ╔══════════════════╗                           │
+│  │ Leptos + MapLibre │────►║ CoalForge Events ║                           │
+│  └───────────────────┘     ╚══════════════════╝                           │
+│                                                                           │
+└───────────────────────────────────────────────────────────────────────────┘</pre></div></div>
+<div class="diagram-container"><div class="diagram-title">Anti-Double Counting — Source Registry</div><div class="dgw"><pre class="ascii" role="img" aria-label="Source registry: lima sumber masuk fusion, tiga sumber diblokir">met.gfs       Base Physics  ──────────────────────────┐   ┌────────────────────────────┐
+met.gefs      Base Ensemble ──────────────────────────┤   │                            │
+met.aigfs     AI Member     ──────────────────────────┼──►│                            │
+met.aigefs    AI Member     ──────────────────────────┤   │      Source Registry       │
+met.bmkg_fc   Local Member  ──────────────────────────┘   │ can_have_separate_weight() │
+                                                          │                            │
+met.hgefs     Excluded      ┄┄ Blocked: Dependency ┄┄┄┐   │                            │
+met.openmeteo Excluded      ┄┄ Blocked: Aggregator ┄┄┄┼┄┄►│                            │
+ref.era5      Training Only ┄┄ Blocked: Training ┄┄┄┄┄┘   └────────────────────────────┘
+
+───►  masuk fusion (bobot terpisah)      ┄┄►  diblokir</pre></div></div>
+<div class="diagram-container"><div class="diagram-title">Bias Correction & Ensemble Probability</div><div class="dgw"><pre class="ascii" role="img" aria-label="Bias correction dan ensemble probability menuju fusion output">    ┌─ Bias Correction (Additive) ────────────────────────────────────────────┐
+    │                                                                         │
+    │ ┌───────────────────────────────┐                                       │
+    │ │          x_prakiraan          │                                       │
+    │ └───────────────────────────────┘                                       │
+    │                 │                                                       │
+    │                 ▼                                                       │
+    │ ┌───────────────────────────────┐     ┌───────────────────────────────┐ │
+    │ │    b (bias per variabel x     │┄┄┄┄►│    b_baru = (1-α)·b_lama +    │ │
+    │ │   lead x siklus x stasiun)    │     │  α·(prakiraan - pengamatan)   │ │
+    │ └───────────────────────────────┘     └───────────────────────────────┘ │
+    │                 │                                                       │
+    │                 ▼                                                       │
+    │ ┌───────────────────────────────┐                                       │
+ ┌──┼─┤  x_koreksi = x_prakiraan - b  │                                       │
+ │  │ └───────────────────────────────┘                                       │
+ │  │                                                                         │
+ │  └─────────────────────────────────────────────────────────────────────────┘
+ │
+ │  ┌─ Ensemble Probability ──────────────────────────────────────────────────┐
+ │  │                                                                         │
+ │  │ ┌───────────────────────────────┐                                       │
+ │  │ │      M anggota ensemble       │                                       │
+ │  │ └───────────────────────────────┘                                       │
+ │  │                 │                                                       │
+ │  │                 ▼                                                       │
+ │  │ ┌───────────────────────────────┐                                       │
+ │  │ │  Hazard pada setiap anggota   │                                       │
+ │  │ └───────────────────────────────┘                                       │
+ │  │                 │                                                       │
+ │  │                 ▼                                                       │
+ │  │ ┌───────────────────────────────┐                                       │
+ │  │ │   p = (1/M) · Σ(1[x_m &gt; T])   │                                       │
+ │  │ └───────────────────────────────┘                                       │
+ │  │                 │                                                       │
+ │  └─────────────────┼───────────────────────────────────────────────────────┘
+ │                    │
+ │                    ▼
+ │         ╔═════════════════════╗
+ └────────►║    Fusion Output    ║
+           ║    FusedVariable    ║
+           ╚═════════════════════╝</pre></div></div>
+<div class="diagram-container"><div class="diagram-title">Output Contract — 16 Fields</div><div class="dgw"><pre class="ascii" role="img" aria-label="Kontrak output FusionOutput beserta field wajib dan opsional">╔═══════════════════════╗
+║ FusionOutput Contract ║
+╚══╤════════════════════╝
+   │
+   ├── unit_id / jenis_unit                    [wajib]
+   ├── modul                                   [wajib]
+   ├── terbit / berlaku_dari / berlaku_sampai  [wajib]
+   ├── lead                                    [wajib]
+   ├── probabilitas                            [wajib]
+   ├── tingkat_siaga                           [wajib]
+   ├── anggota / versi_model                   [wajib]
+   ├── koreksi_bias                            [wajib]
+   ├── sumber_id / atribusi                    [wajib]
+   ├── label_istilah                           [wajib]
+   └── klaim (D1-D4)                           [opsional]</pre></div></div>
+</section>
+
+  </main><aside class="toc" id="toc" aria-label="Di halaman ini"></aside></div></div>
+<div class="sbar" role="timer" aria-label="Jam lokal dan UTC"><span class="live"><i></i><span>Realtime</span></span><span class="bl"><strong>Andronikos Weather Intelligence</strong><span class="tg"> — Weather Intelligence Engine untuk Indonesia</span></span><span class="disc"><strong>Informasi risiko, bukan peringatan resmi</strong> · Lihat <a href="https://www.bmkg.go.id" target="_blank" rel="noopener">BMKG</a> untuk peringatan dini.</span><span class="clk"><em id="ltz">Lokal</em><time id="lt">--:--:--</time><small id="ld"></small></span><span class="clk"><em>UTC</em><time id="ut">--:--:--</time><small id="ud"></small></span></div>
+<div id="pal" hidden><div class="pbox" role="dialog" aria-modal="true" aria-label="Cari dokumentasi"><input id="pq" type="text" placeholder="Cari judul atau isi dokumentasi" autocomplete="off" aria-label="Cari"><ul id="pr" role="listbox"></ul></div></div>
+<script>
+(()=>{const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)],root=document.documentElement,body=document.body;
+$('#theme').onclick=()=>{const t=root.dataset.theme==='light'?'dark':'light';root.dataset.theme=t;try{localStorage.setItem('theme',t)}catch(e){}};
+const close=()=>body.classList.remove('open');$('#menu').onclick=()=>body.classList.toggle('open');$('#scrim').onclick=close;
+$$('.nav-group-title').forEach(t=>{t.tabIndex=0;t.setAttribute('role','button');const g=t.parentNode,f=()=>g.classList.toggle('closed');t.onclick=f;t.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();f()}}});
+const used={};$$('.section h3,.section h4').forEach(h=>{if(h.id)return;let b=h.textContent.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'bagian';let n=b,i=2;while(used[n]||document.getElementById(n))n=b+'-'+i++;used[n]=1;h.id=n});
+const secs=$$('.section'),links=new Map($$('.nav-link').map(a=>[a.hash.slice(1),a])),crumb=$('#crumb'),toc=$('#toc'),nav=$('.nav');let cur=null,tl=new Map;
+function buildToc(sec){tl=new Map;toc.textContent='';const hs=$$('h3',sec);if(!hs.length)return;const b=document.createElement('b');b.textContent='Di halaman ini';toc.append(b);hs.forEach(h=>{const a=document.createElement('a');a.href='#'+h.id;a.textContent=h.textContent;toc.append(a);tl.set(h.id,a)})}
+function setActive(id){if(id===cur)return;cur=id;links.forEach((a,k)=>{a.classList.toggle('active',k===id);k===id?a.setAttribute('aria-current','true'):a.removeAttribute('aria-current')});const sec=document.getElementById(id);crumb.textContent=$('h2',sec).textContent;buildToc(sec);const a=links.get(id);if(a){const r=a.getBoundingClientRect(),n=nav.getBoundingClientRect();if(r.top<n.top||r.bottom>n.bottom)nav.scrollTop+=r.top-n.top-80}}
+const so=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting&&setActive(e.target.id)),{rootMargin:'-60px 0px -70% 0px'});secs.forEach(s=>so.observe(s));
+const ho=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){tl.forEach(a=>a.classList.remove('on'));const a=tl.get(e.target.id);a&&a.classList.add('on')}}),{rootMargin:'-60px 0px -75% 0px'});$$('.section h3').forEach(h=>ho.observe(h));
+links.forEach(a=>a.addEventListener('click',close));
+if(secs[0])setActive(secs[0].id);
+const bar=$('#bar');let tk=0;addEventListener('scroll',()=>{if(tk)return;tk=1;requestAnimationFrame(()=>{bar.style.transform='scaleX('+(scrollY/((root.scrollHeight-innerHeight)||1))+')';tk=0})},{passive:true});
+$$('.code-block,.section > pre').forEach(cb=>{const pre=cb.tagName==='PRE'?cb:$('pre',cb);if(!pre)return;if(cb.tagName==='PRE'){const w=document.createElement('div');w.className='code-block';cb.replaceWith(w);w.append(cb);cb=w}
+const b=document.createElement('button');b.className='cp';b.type='button';b.textContent='Salin';b.onclick=async()=>{const t=pre.innerText;try{await navigator.clipboard.writeText(t)}catch(e){const x=document.createElement('textarea');x.value=t;document.body.append(x);x.select();document.execCommand('copy');x.remove()}b.textContent='Tersalin';setTimeout(()=>b.textContent='Salin',1500)};cb.append(b)});
+const pal=$('#pal'),pq=$('#pq'),pr=$('#pr');let idx=null,res=[],sel=0;
+function build(){idx=[];secs.forEach(s=>{const sn=$('h2',s).textContent;$$('h2,h3,h4',s).forEach(h=>{let t='',n=h.nextElementSibling;while(n&&!/^H[234]$/.test(n.tagName)){t+=' '+n.textContent;n=n.nextElementSibling}t=t.replace(/\s+/g,' ').trim();idx.push({id:h.tagName==='H2'?s.id:h.id,title:h.textContent,sec:sn,text:t,hay:(h.textContent+' '+t).toLowerCase()})})})}
+function render(){pr.textContent='';if(!res.length){const d=document.createElement('li');d.className='pe';d.textContent=pq.value?'Tidak ada hasil untuk "'+pq.value+'". Coba kata kunci lain.':'Ketik untuk mencari judul dan isi dokumentasi.';pr.append(d);return}
+res.forEach((r,i)=>{const li=document.createElement('li');li.setAttribute('role','option');li.setAttribute('aria-selected',i===sel);const b=document.createElement('b'),s=document.createElement('small');b.textContent=r.title;const q=pq.value.toLowerCase().split(/\s+/)[0],p=r.text.toLowerCase().indexOf(q);s.textContent=r.sec+(r.text?' - '+(p>40?'...'+r.text.slice(p-30,p+70):r.text.slice(0,100)):'');li.append(b,s);li.onclick=()=>go(i);li.onmousemove=()=>{if(sel!==i){sel=i;mark()}};pr.append(li)})}
+function mark(){$$('#pr li').forEach((l,i)=>l.setAttribute('aria-selected',i===sel));const a=$('#pr [aria-selected=true]');a&&a.scrollIntoView({block:'nearest'})}
+function find(){if(!idx)build();const ts=pq.value.toLowerCase().split(/\s+/).filter(Boolean);res=ts.length?idx.filter(x=>ts.every(t=>x.hay.includes(t))).map(x=>({...x,sc:ts.every(t=>x.title.toLowerCase().includes(t))?0:1})).sort((a,b)=>a.sc-b.sc).slice(0,12):[];sel=0;render()}
+function go(i){const r=res[i];if(!r)return;shut();location.hash=r.id}
+function open(){pal.hidden=false;pq.value='';res=[];render();pq.focus()}function shut(){pal.hidden=true}
+$$('[data-search]').forEach(b=>b.onclick=()=>{close();open()});pq.oninput=find;pal.onclick=e=>{if(e.target===pal)shut()};
+addEventListener('keydown',e=>{const k=e.key;if((e.ctrlKey||e.metaKey)&&k.toLowerCase()==='k'){e.preventDefault();pal.hidden?open():shut();return}
+if(pal.hidden){if(k==='/'&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();open()}return}
+if(k==='Escape')shut();else if(k==='ArrowDown'){e.preventDefault();sel=Math.min(sel+1,res.length-1);mark()}else if(k==='ArrowUp'){e.preventDefault();sel=Math.max(sel-1,0);mark()}else if(k==='Enter'){e.preventDefault();go(sel)}});
+const lt=$('#lt'),ut=$('#ut'),ld=$('#ld'),ud=$('#ud'),ltz=$('#ltz'),p2=n=>String(n).padStart(2,'0'),dn=['Min','Sen','Sel','Rab','Kam','Jum','Sab'],mn=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+try{const o=Intl.DateTimeFormat().resolvedOptions().timeZone,x=new Intl.DateTimeFormat('id-ID',{timeZoneName:'short'}).formatToParts(new Date()).find(a=>a.type==='timeZoneName');if(x)ltz.textContent=x.value;if(o)ltz.title=o}catch(e){}
+function tick(){const d=new Date();lt.textContent=p2(d.getHours())+':'+p2(d.getMinutes())+':'+p2(d.getSeconds());ut.textContent=p2(d.getUTCHours())+':'+p2(d.getUTCMinutes())+':'+p2(d.getUTCSeconds());ld.textContent=dn[d.getDay()]+', '+d.getDate()+' '+mn[d.getMonth()]+' '+d.getFullYear();ud.textContent=dn[d.getUTCDay()]+', '+d.getUTCDate()+' '+mn[d.getUTCMonth()]+' '+d.getUTCFullYear()}
+let tm;function loop(){tick();tm=setTimeout(loop,1000-Date.now()%1000+5)}
+document.addEventListener('visibilitychange',()=>{clearTimeout(tm);if(!document.hidden)loop()});loop();
+})();
+</script></body></html>

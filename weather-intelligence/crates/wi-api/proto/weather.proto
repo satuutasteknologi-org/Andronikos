@@ -1,0 +1,120 @@
+syntax = "proto3";
+
+package weather.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service WeatherService {
+  // Single point prediction
+  rpc Predict(PredictRequest) returns (PredictResponse);
+  
+  // Grid prediction
+  rpc PredictGrid(GridPredictRequest) returns (GridPredictResponse);
+  
+  // Streaming predictions for multiple lead times
+  rpc StreamPredict(StreamPredictRequest) returns (stream PredictResponse);
+  
+  // Model info
+  rpc GetModelInfo(ModelInfoRequest) returns (ModelInfoResponse);
+  
+  // Health check
+  rpc Health(HealthRequest) returns (HealthResponse);
+}
+
+message PredictRequest {
+  double latitude = 1;
+  double longitude = 2;
+  uint32 lead_seconds = 3;
+  repeated string variables = 4;
+}
+
+message PredictResponse {
+  double latitude = 1;
+  double longitude = 2;
+  uint32 lead_seconds = 3;
+  uint32 lead_hours = 4;
+  repeated Prediction predictions = 5;
+  string model_version = 6;
+  google.protobuf.Timestamp valid_time = 7;
+}
+
+message Prediction {
+  string variable = 1;
+  float value = 2;
+  string unit = 3;
+  float confidence = 4;
+  QuantilePrediction quantiles = 5;
+}
+
+message QuantilePrediction {
+  float p10 = 1;
+  float p50 = 2;
+  float p90 = 3;
+  float prob_rain = 4;
+}
+
+message GridPredictRequest {
+  double min_lat = 1;
+  double min_lon = 2;
+  double max_lat = 3;
+  double max_lon = 4;
+  uint32 resolution = 5;
+  uint32 lead_seconds = 6;
+  repeated string variables = 7;
+}
+
+message GridPredictResponse {
+  repeated GridCell cells = 1;
+  uint32 resolution = 2;
+  uint32 lead_seconds = 3;
+  uint32 lead_hours = 4;
+  string model_version = 5;
+  google.protobuf.Timestamp valid_time = 6;
+}
+
+message GridCell {
+  double lat = 1;
+  double lon = 2;
+  uint64 cell_id = 3;
+  repeated CellPrediction predictions = 4;
+  Quantiles quantiles = 5;
+  float confidence = 6;
+}
+
+message CellPrediction {
+  string variable = 1;
+  float value = 2;
+}
+
+message Quantiles {
+  map<string, QuantilePrediction> quantiles = 1;
+}
+
+message StreamPredictRequest {
+  double latitude = 1;
+  double longitude = 2;
+  uint32 lead_seconds = 3;
+  uint32 interval_seconds = 4;
+  uint32 max_predictions = 5;
+}
+
+message ModelInfoRequest {}
+
+message ModelInfoResponse {
+  string name = 1;
+  string version = 2;
+  string architecture = 3;
+  uint64 num_parameters = 4;
+  repeated string supported_variables = 5;
+  repeated uint32 supported_lead_times = 6;
+  repeated uint32 supported_resolutions = 7;
+}
+
+message HealthRequest {}
+
+message HealthResponse {
+  string status = 1;
+  bool model_loaded = 2;
+  google.protobuf.Timestamp timestamp = 3;
+  uint64 uptime_seconds = 4;
+}

@@ -1,0 +1,53 @@
+[package]
+name = "aetherforge-ml"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "ML Core - GNN + Spatiotemporal Attention Models for AetherForge"
+license.workspace = true
+
+[[bin]]
+name = "aetherforge-train"
+path = "src/bin/aetherforge-train.rs"
+
+[[bin]]
+name = "aetherforge-predict"
+path = "src/bin/aetherforge-predict.rs"
+
+[dependencies]
+aetherforge-core = { path = "../aetherforge-core" }
+
+burn.workspace = true
+burn-ndarray.workspace = true
+burn-wgpu.workspace = true
+burn-cuda.workspace = true
+
+ndarray.workspace = true
+ndarray-rand.workspace = true
+ndarray-stats.workspace = true
+rand.workspace = true
+rand_distr.workspace = true
+
+geo.workspace = true
+h3o.workspace = true
+
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+arrow.workspace = true
+parquet.workspace = true
+
+tracing.workspace = true
+tracing-subscriber.workspace = true
+figment.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+
+statrs.workspace = true
+num.workspace = true
+mint.workspace = true
+
+indicatif.workspace = true
+
+[dev-dependencies]
+criterion = "0.5"

@@ -1,0 +1,150 @@
+name: CI — Weather Intelligence
+
+on:
+  push:
+    branches: [master, main, develop]
+  pull_request:
+    branches: [master, main]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+  # Cache key prefix — increment untuk invalidasi manual
+  CACHE_VERSION: v1
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Gate 1: Format
+  # ─────────────────────────────────────────────────────────────────────────────
+  fmt:
+    name: Format (rustfmt)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+        working-directory: weather-intelligence
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Gate 2: Lint (Clippy)
+  # ─────────────────────────────────────────────────────────────────────────────
+  clippy:
+    name: Lint (clippy -D warnings)
+    runs-on: ubuntu-22.04
+    needs: fmt
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            weather-intelligence/target
+          key: ${{ env.CACHE_VERSION }}-clippy-${{ runner.os }}-${{ hashFiles('weather-intelligence/Cargo.lock') }}
+          restore-keys: |
+            ${{ env.CACHE_VERSION }}-clippy-${{ runner.os }}-
+
+      - name: Run clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+        working-directory: weather-intelligence
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Gate 3: Tests
+  # ─────────────────────────────────────────────────────────────────────────────
+  test:
+    name: Tests (lib + unit)
+    runs-on: ubuntu-22.04
+    needs: clippy
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            weather-intelligence/target
+          key: ${{ env.CACHE_VERSION }}-test-${{ runner.os }}-${{ hashFiles('weather-intelligence/Cargo.lock') }}
+          restore-keys: |
+            ${{ env.CACHE_VERSION }}-test-${{ runner.os }}-
+
+      - name: Run unit tests
+        run: cargo test --workspace --lib -- --test-threads=4
+        working-directory: weather-intelligence
+
+      - name: Run doc tests
+        run: cargo test --workspace --doc
+        working-directory: weather-intelligence
+        continue-on-error: true  # doc tests opsional untuk sekarang
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Gate 4: Audit keamanan dependencies
+  # ─────────────────────────────────────────────────────────────────────────────
+  audit:
+    name: Security Audit (cargo-audit)
+    runs-on: ubuntu-22.04
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+
+      - name: Run audit
+        run: cargo audit
+        working-directory: weather-intelligence
+        continue-on-error: true  # advisory baru tidak blokir build
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Gate 5: Build release (verifikasi linker + optimasi)
+  # ─────────────────────────────────────────────────────────────────────────────
+  build:
+    name: Build Release
+    runs-on: ubuntu-22.04
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            weather-intelligence/target
+          key: ${{ env.CACHE_VERSION }}-release-${{ runner.os }}-${{ hashFiles('weather-intelligence/Cargo.lock') }}
+          restore-keys: |
+            ${{ env.CACHE_VERSION }}-release-${{ runner.os }}-
+
+      - name: Build release binary
+        run: cargo build --release -p wi-api -p wi-cli
+        working-directory: weather-intelligence
+
+      - name: Upload binary artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wi-binaries-${{ github.sha }}
+          path: |
+            weather-intelligence/target/release/wi-serve
+            weather-intelligence/target/release/wi-cli
+          retention-days: 7

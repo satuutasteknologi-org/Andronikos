@@ -1,0 +1,34 @@
+[package]
+name = "wi-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "Core types, errors, config, and traits for Weather Intelligence"
+license.workspace = true
+
+[dependencies]
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+chrono.workspace = true
+ndarray.workspace = true
+figment.workspace = true
+reqwest.workspace = true
+
+geo.workspace = true
+geo-types.workspace = true
+h3o.workspace = true
+sha2.workspace = true
+smallvec.workspace = true
+toml.workspace = true
+
+async-trait.workspace = true
+dirs.workspace = true
+futures.workspace = true
+
+[dev-dependencies]
+tokio-test = "0.4"
+proptest = "1.5"

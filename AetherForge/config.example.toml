@@ -1,0 +1,121 @@
+# AetherForge Configuration File
+# Copy this to config.toml and modify as needed
+
+[general]
+version = "1.0.0"
+environment = "production"  # development, staging, production
+
+[storage]
+base_path = "/var/aetherforge/data"
+compression_enabled = true
+compression_level = 3  # 1=fastest, 22=best (zstd)
+
+[sync]
+parallel_workers = 8
+batch_size = 1000
+timeout_secs = 300
+retry_attempts = 3
+retry_delay_ms = 1000
+checkpoint_interval = 100
+enable_validation = true
+enable_gap_filling = true
+
+# Sync scheduling
+[sync.scheduler]
+enabled = true
+interval_hours = 1
+max_catchup_hours = 168
+
+[ml]
+model_path = "/var/aetherforge/models/graphcast_burn.safetensors"
+model_format = "BurnNative"  # BurnNative, Onnx, PyTorch, TensorRT
+batch_size = 512
+device = "cpu"  # cpu, cuda, metal, wgpu
+enable_quantization = false
+quantization_precision = "FP16"  # FP32, FP16, BF16, INT8, INT4
+graphcast_weights_path = "/var/aetherforge/models/graphcast_burn.safetensors"
+graphcast_onnx_path = "/var/aetherforge/models/graphcast.onnx"
+
+[ml.inference]
+default_resolution = "Kilometer1"  # Kilometer1, H3Resolution7, H3Resolution6, Custom
+cache_enabled = true
+cache_ttl_secs = 3600
+confidence_threshold = 0.5
+max_concurrent_batches = 4
+
+[api]
+host = "0.0.0.0"
+port = 8085
+workers = 4
+cors_enabled = true
+cors_allowed_origins = ["*"]
+request_timeout_secs = 30
+max_body_size_mb = 10
+
+[api.grpc]
+enabled = true
+port = 50051
+max_concurrent_streams = 100
+
+[sources.open_meteo]
+enabled = true
+base_url = "https://api.open-meteo.com"
+rate_limit = 10.0  # requests per second
+api_key = ""  # Optional: for higher rate limits
+
+[sources.noaa]
+enabled = true
+api_token = ""  # Optional: for higher rate limits
+use_isd_lite = true
+
+[sources.era5]
+enabled = false  # Requires CDS API key
+api_key = ""
+rate_limit = 1.0  # requests per second
+
+[sources.gfs]
+enabled = true
+use_s3 = false  # Set true to use AWS S3 instead of NOMADS
+rate_limit = 5.0
+
+[logging]
+level = "info"  # trace, debug, info, warn, error
+format = "json"  # json, pretty
+output = "stdout"  # stdout, file, both
+file_path = "/var/aetherforge/logs/aetherforge.log"
+max_file_size_mb = 100
+max_files = 10
+
+[tracing]
+enabled = true
+otlp_endpoint = ""  # OpenTelemetry collector endpoint
+service_name = "aetherforge"
+
+[metrics]
+enabled = true
+prometheus_port = 9090
+export_interval_secs = 15
+
+[security]
+# API Authentication (optional)
+api_keys = []  # List of valid API keys for /predict endpoints
+jwt_secret = ""  # JWT secret for token-based auth
+rate_limit_per_minute = 60  # Per IP/client
+
+[performance]
+# Thread pool sizes
+tokio_worker_threads = 8
+rayon_num_threads = 8
+
+# Memory limits
+max_memory_gb = 8
+
+# GPU settings (if cuda device)
+cuda_device = 0
+cuda_memory_fraction = 0.9
+
+[development]
+# Development/debug settings
+debug_endpoints = false
+mock_predictions = false
+skip_model_load = false

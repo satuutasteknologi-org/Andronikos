@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package aetherforge;
+
+option go_package = "github.com/aetherforge/weather/gen/go";
+option java_package = "com.aetherforge.weather";
+option java_multiple_files = true;
+
+// Weather prediction service
+service AetherforgeWeatherService {
+  rpc Predict(PredictRequest) returns (PredictResponse);
+  rpc PredictGrid(GridPredictRequest) returns (GridPredictResponse);
+  rpc StreamPredict(StreamPredictRequest) returns (stream PredictResponse);
+}
+
+// Point prediction request
+message PredictRequest {
+  double latitude = 1;
+  double longitude = 2;
+  uint32 lead_hours = 3;
+  repeated string variables = 4;
+}
+
+// Point prediction response
+message PredictResponse {
+  double latitude = 1;
+  double longitude = 2;
+  Timestamp valid_time = 3;
+  repeated Prediction predictions = 4;
+}
+
+// Grid prediction request
+message GridPredictRequest {
+  double min_lat = 1;
+  double min_lon = 2;
+  double max_lat = 3;
+  double max_lon = 4;
+  uint32 resolution = 5;
+  uint32 lead_hours = 6;
+}
+
+// Grid prediction response
+message GridPredictResponse {
+  repeated GridCell cells = 1;
+  uint32 resolution = 2;
+  uint32 lead_hours = 3;
+}
+
+// Single grid cell
+message GridCell {
+  double lat = 1;
+  double lon = 2;
+  string geohash = 3;
+  repeated Prediction predictions = 4;
+}
+
+// Individual variable prediction
+message Prediction {
+  string variable = 1;
+  float value = 2;
+  string unit = 3;
+  float confidence = 4;
+}
+
+// Streaming prediction request
+message StreamPredictRequest {
+  double latitude = 1;
+  double longitude = 2;
+  uint32 lead_hours = 3;
+  uint32 interval_seconds = 4;
+  uint32 max_predictions = 5;
+}
+
+// Timestamp
+message Timestamp {
+  int64 seconds = 1;
+  int32 nanos = 2;
+}

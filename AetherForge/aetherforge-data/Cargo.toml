@@ -1,0 +1,61 @@
+[package]
+name = "aetherforge-data"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "Data Ingestion, Sync Engine, and Preprocessing for AetherForge"
+license.workspace = true
+
+[[bin]]
+name = "aetherforge-data"
+path = "src/bin/aetherforge-data.rs"
+
+[dependencies]
+aetherforge-core = { path = "../aetherforge-core" }
+
+tokio.workspace = true
+reqwest.workspace = true
+async-stream.workspace = true
+futures.workspace = true
+http.workspace = true
+
+serde.workspace = true
+serde_json.workspace = true
+bincode.workspace = true
+ndarray.workspace = true
+parquet.workspace = true
+arrow.workspace = true
+
+zstd.workspace = true
+
+geo.workspace = true
+geo-types.workspace = true
+geojson.workspace = true
+h3o.workspace = true
+
+chrono.workspace = true
+
+async-trait = "0.1"
+
+tracing.workspace = true
+tracing-subscriber.workspace = true
+tracing-appender.workspace = true
+
+figment.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+once_cell.workspace = true
+parking_lot.workspace = true
+dashmap.workspace = true
+indicatif.workspace = true
+bytesize.workspace = true
+
+sha2.workspace = true
+tempfile.workspace = true
+walkdir.workspace = true
+lz4_flex.workspace = true
+brotli.workspace = true
+flate2.workspace = true
+
+[dev-dependencies]
+proptest = "1.5"

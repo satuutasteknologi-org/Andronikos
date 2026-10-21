@@ -1,0 +1,38 @@
+[package]
+name = "aetherforge-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "CLI for AetherForge Weather Intelligence Engine"
+license.workspace = true
+
+[[bin]]
+name = "aetherforge"
+path = "src/main.rs"
+
+[dependencies]
+aetherforge-core = { path = "../aetherforge-core" }
+aetherforge-data = { path = "../aetherforge-data" }
+aetherforge-ml = { path = "../aetherforge-ml" }
+aetherforge-api = { path = "../aetherforge-api" }
+
+tokio.workspace = true
+clap = { version = "4.5", features = ["derive", "env", "cargo"] }
+anyhow.workspace = true
+eyre.workspace = true
+color-eyre.workspace = true
+
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+figment.workspace = true
+chrono.workspace = true
+humantime.workspace = true
+
+indicatif.workspace = true
+burn.workspace = true
+burn-ndarray.workspace = true
+
+[dev-dependencies]
+assert_cmd = "2.0"
+predicates = "3.1"

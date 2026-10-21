@@ -1,0 +1,27 @@
+[package]
+name = "wi-verify"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "Verification metrics: MAE, RMSE, Brier, CRPS, Reliability"
+license.workspace = true
+
+[dependencies]
+wi-core = { path = "../wi-core" }
+
+ndarray.workspace = true
+statrs.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+rayon.workspace = true
+tracing.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+parking_lot.workspace = true
+async-trait.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+proptest = "1.5"
+criterion = "0.5"

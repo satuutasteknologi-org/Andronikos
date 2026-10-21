@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>AetherForge Command Center</title>
+    <!-- MapLibre GL JS (Enterprise Grade, No Token Needed) -->
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+    <!-- Deck.gl Pure WebGL Engine (Zero Dependencies) -->
+    <script src="https://unpkg.com/deck.gl@8.9.3/dist.min.js"></script>
+    <link data-trunk rel="css" href="style/main.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="deck-canvas-container"></div>
+    <script>
+        window.initialize_deckgl = function(container_id) {
+            console.log("Initializing F5-Resilient WebGL Engine...");
+            
+            // 1. MEMORY LEAK PREVENTION (F5 Rapid Refresh)
+            // Menghancurkan instance MapLibre dan WebGL context sebelumnya jika ada
+            if (window.aether_map) {
+                console.warn("Disposing abandoned WebGL Context to prevent memory leak...");
+                window.aether_map.remove();
+            }
+
+            // 2. STATE PERSISTENCE
+            // Memulihkan posisi kamera terakhir dari sessionStorage
+            const savedCamera = JSON.parse(sessionStorage.getItem('aether_camera')) || {
+                center: [113.9213, -0.7893],
+                zoom: 4.5,
+                pitch: 50,
+                bearing: 15
+            };
+            
+            const map = new maplibregl.Map({
+                container: container_id,
+                style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+                center: savedCamera.center,
+                zoom: savedCamera.zoom,
+                minZoom: 3.0, 
+                maxZoom: 20,
+                pitch: savedCamera.pitch,
+                maxPitch: 60,
+                bearing: savedCamera.bearing,
+                antialias: true,
+                pitchWithRotate: true,
+                dragRotate: true,
+                attributionControl: false // Mencegah MapLibre membuat elemen DOM hak cipta
+            });
+            
+            window.aether_map = map;
+
+            // Menyimpan posisi kamera setiap kali user berhenti menggeser layar
+            map.on('moveend', () => {
+                sessionStorage.setItem('aether_camera', JSON.stringify({
+                    center: map.getCenter().toArray(),
+                    zoom: map.getZoom(),
+                    pitch: map.getPitch(),
+                    bearing: map.getBearing()
+                }));
+            });
+
+            // MapboxOverlay dengan mode "interleaved: true"
+            window.deckgl_overlay = new deck.MapboxOverlay({
+                interleaved: true,
+                layers: []
+            });
+
+            map.addControl(window.deckgl_overlay);
+        };
+
+        window.update_deckgl_hexagons = function(data_json) {
+            // 3. NULL SAFETY (Race Condition Prevention)
+            if (!window.deckgl_overlay || typeof deck === 'undefined') return;
+            try {
+                const data = JSON.parse(data_json);
+                // Menggunakan ColumnLayer 6-sisi (Heksagon 3D murni dari Lat/Lon)
+                // Ini menghilangkan kebutuhan string index H3 yang kompleks dan menjamin render 100%
+                const h3Layer = new deck.ColumnLayer({
+                    id: 'weather-h3-layer',
+                    data,
+                    diskResolution: 6, // 6 sisi = Heksagon
+                    radius: 40000, // Radius 40 kilometer
+                    pickable: true,
+                    extruded: true,
+                    elevationScale: 1,
+                    getPosition: d => [d.lon, d.lat],
+                    getFillColor: d => [d.color_r, d.color_g, d.color_b, 200], // Sedikit transparan
+                    getLineColor: [0, 210, 255, 255],
+                    getElevation: d => d.elevation,
+                    transitions: {
+                        getElevation: 1000,
+                        getFillColor: 1000
+                    },
+                    onClick: (info) => {
+                        // Bridge ke WASM / Leptos
+                        if (info.object) {
+                            window.AETHER_SELECTED_HEX = info.object;
+                        } else {
+                            window.AETHER_SELECTED_HEX = null;
+                        }
+                        const btn = document.getElementById('trigger-hex-update');
+                        if (btn) btn.click();
+                    }
+                });
+                
+                window.deckgl_overlay.setProps({ layers: [h3Layer] });
+            } catch(e) {
+                console.error("Failed to update Deck.gl:", e);
+            }
+        };
+    </script>
+</body>
+</html>

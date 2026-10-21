@@ -1,0 +1,29 @@
+# Export Configuration
+
+# Model export settings
+export:
+  graphcast: true
+  downscaler: true
+  
+  graphcast_checkpoint: "./checkpoints/graphcast_best.pt"
+  graphcast_output: "./exports/graphcast.onnx"
+  
+  downscaler_checkpoint: "./checkpoints/downscaler_best.pt"
+  downscaler_output: "./exports/downscaler.onnx"
+
+# Model configurations for export
+model:
+  # GraphCast
+  hidden_dim: 256
+  num_layers: 12
+  num_heads: 8
+  surface_vars: 5
+  atmosphere_vars: 6
+  pressure_levels: 13
+  dropout: 0.1
+  
+  # Downscaler
+  input_dim: 14
+  output_dim: 24
+  hidden_dims: [256, 512, 512, 256]
+  dropout: 0.1
